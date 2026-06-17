@@ -1,0 +1,12 @@
+enrollment_id,student_id,course_id,status
+E001,S001,C001,Completed
+E002,S002,C002,Enrolled
+E003,S003,C003,Dropped
+E004,S004,C004,Enrolled
+E005,S005,C005,Enrolled
+E006,S006,C001,Completed
+E007,S007,C006,Enrolled
+E008,S008,C007,Completed
+E009,S009,C008,Dropped
+E010,S010,C009,Enrolled
+ 

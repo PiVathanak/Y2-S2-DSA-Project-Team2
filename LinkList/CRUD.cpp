@@ -64,8 +64,12 @@ void updateNode(dataList *dl, const string &id, const string &dataType, const st
                 {
                     if (field == "name")
                         s->name = newValue;
+                    else if (field == "username")
+                        s->username = newValue;
                     else if (field == "email")
                         s->email = newValue;
+                    else if (field == "password")
+                        s->password = newValue;
                     else if (field == "status")
                         s->status = newValue;
                     cout << "Updated successfully!" << endl;
@@ -79,10 +83,8 @@ void updateNode(dataList *dl, const string &id, const string &dataType, const st
                 {
                     if (field == "name")
                         t->name = newValue;
-                    else if (field == "username")
-                        t->username = newValue;
-                    else if (field == "password")
-                        t->password = newValue;
+                    else if (field == "course_id")
+                        t->course_id = newValue;
                     cout << "Updated successfully!" << endl;
                     return;
                 }
@@ -94,6 +96,10 @@ void updateNode(dataList *dl, const string &id, const string &dataType, const st
                 {
                     if (field == "course_name")
                         c->course_name = newValue;
+                    else if (field == "teacher_id")
+                        c->teacher_id = newValue;
+                    else if (field == "credits")
+                        c->credits = newValue;
                     cout << "Updated successfully!" << endl;
                     return;
                 }
@@ -103,23 +109,55 @@ void updateNode(dataList *dl, const string &id, const string &dataType, const st
                 Enrollment *e = (Enrollment *)temp->data;
                 if (e->enrollment_id == id)
                 {
-                    if (field == "status")
-                        e->status = newValue;
+                    if (field == "student_id")
+                        e->student_id = newValue;
+                    else if (field == "course_id")
+                        e->course_id = newValue;
                     cout << "Updated successfully!" << endl;
                     return;
                 }
             }
-            else if (dataType == "User")
+            else if (dataType == "PendingEnrollment")
             {
-                User *u = (User *)temp->data;
-                if (u->pending_id == id)
+                PendingEnrollment *p = (PendingEnrollment *)temp->data;
+                if (p->enrollment_id == id)
+                {
+                    if (field == "student_id")
+                        p->student_id = newValue;
+                    else if (field == "course_id")
+                        p->course_id = newValue;
+                    cout << "Updated successfully!" << endl;
+                    return;
+                }
+            }
+            else if (dataType == "Admin")
+            {
+                Admin *a = (Admin *)temp->data;
+                if (a->admin_id == id)
+                {
+                    if (field == "username")
+                        a->username = newValue;
+                    else if (field == "password")
+                        a->password = newValue;
+                    cout << "Updated successfully!" << endl;
+                    return;
+                }
+            }
+            else if (dataType == "PendingUser")
+            {
+                PendingUser *u = (PendingUser *)temp->data;
+                if (u->student_id == id)
                 {
                     if (field == "name")
                         u->name = newValue;
                     else if (field == "username")
                         u->username = newValue;
+                    else if (field == "email")
+                        u->email = newValue;
                     else if (field == "password")
                         u->password = newValue;
+                    else if (field == "status")
+                        u->status = newValue;
                     cout << "Updated successfully!" << endl;
                     return;
                 }
@@ -143,7 +181,6 @@ void deleteNode(dataList *dl, const string &id, const string &dataType)
     DataNode *temp = dl->head;
     DataNode *prev = nullptr;
 
-    // Find the node to delete
     while (temp != nullptr)
     {
         if (temp->dataType == dataType)
@@ -170,18 +207,26 @@ void deleteNode(dataList *dl, const string &id, const string &dataType)
                 Enrollment *e = (Enrollment *)temp->data;
                 foundId = (e->enrollment_id == id);
             }
-            else if (dataType == "User")
+            else if (dataType == "PendingEnrollment")
             {
-                User *u = (User *)temp->data;
-                foundId = (u->pending_id == id);
+                PendingEnrollment *p = (PendingEnrollment *)temp->data;
+                foundId = (p->enrollment_id == id);
+            }
+            else if (dataType == "Admin")
+            {
+                Admin *a = (Admin *)temp->data;
+                foundId = (a->admin_id == id);
+            }
+            else if (dataType == "PendingUser")
+            {
+                PendingUser *u = (PendingUser *)temp->data;
+                foundId = (u->student_id == id);
             }
 
             if (foundId)
             {
-                // Delete found node
                 if (prev == nullptr)
                 {
-                    // Delete head
                     dl->head = temp->next;
                     if (dl->n == 1)
                     {
@@ -190,7 +235,6 @@ void deleteNode(dataList *dl, const string &id, const string &dataType)
                 }
                 else
                 {
-                    // Delete middle or tail
                     prev->next = temp->next;
                     if (temp == dl->tail)
                     {
@@ -222,32 +266,58 @@ void displayDataList(dataList *dl)
         if (temp->dataType == "Student")
         {
             Student *s = (Student *)temp->data;
-            cout << index++ << ". [Student] ID: " << s->student_id << " | Name: " << s->name
-                 << " | Email: " << s->email << " | Status: " << s->status << endl;
+            cout << index++ << ". [Student] ID: " << s->student_id
+                 << " | Name: " << s->name
+                 << " | Username: " << s->username
+                 << " | Email: " << s->email
+                 << " | Password: " << s->password
+                 << " | Status: " << s->status << endl;
         }
         else if (temp->dataType == "Teacher")
         {
             Teacher *t = (Teacher *)temp->data;
-            cout << index++ << ". [Teacher] ID: " << t->teacher_id << " | Name: " << t->name
-                 << " | Username: " << t->username << endl;
+            cout << index++ << ". [Teacher] ID: " << t->teacher_id
+                 << " | Name: " << t->name
+                 << " | Course ID: " << t->course_id << endl;
         }
         else if (temp->dataType == "Course")
         {
             Course *c = (Course *)temp->data;
-            cout << index++ << ". [Course] ID: " << c->course_id << " | Name: " << c->course_name
-                 << " | Teacher: " << c->teacher_id << " | Credits: " << c->credits << endl;
+            cout << index++ << ". [Course] ID: " << c->course_id
+                 << " | Name: " << c->course_name
+                 << " | Teacher: " << c->teacher_id
+                 << " | Credits: " << c->credits << endl;
         }
         else if (temp->dataType == "Enrollment")
         {
             Enrollment *e = (Enrollment *)temp->data;
-            cout << index++ << ". [Enrollment] ID: " << e->enrollment_id << " | Student: " << e->student_id
-                 << " | Course: " << e->course_id << " | Status: " << e->status << endl;
+            cout << index++ << ". [Enrollment] ID: " << e->enrollment_id
+                 << " | Student: " << e->student_id
+                 << " | Course: " << e->course_id << endl;
         }
-        else if (temp->dataType == "User")
+        else if (temp->dataType == "PendingEnrollment")
         {
-            User *u = (User *)temp->data;
-            cout << index++ << ". [User] ID: " << u->pending_id << " | Name: " << u->name
-                 << " | Username: " << u->username << endl;
+            PendingEnrollment *p = (PendingEnrollment *)temp->data;
+            cout << index++ << ". [PendingEnrollment] ID: " << p->enrollment_id
+                 << " | Student: " << p->student_id
+                 << " | Course: " << p->course_id << endl;
+        }
+        else if (temp->dataType == "Admin")
+        {
+            Admin *a = (Admin *)temp->data;
+            cout << index++ << ". [Admin] ID: " << a->admin_id
+                 << " | Username: " << a->username
+                 << " | Password: " << a->password << endl;
+        }
+        else if (temp->dataType == "PendingUser")
+        {
+            PendingUser *u = (PendingUser *)temp->data;
+            cout << index++ << ". [PendingUser] ID: " << u->student_id
+                 << " | Name: " << u->name
+                 << " | Username: " << u->username
+                 << " | Email: " << u->email
+                 << " | Password: " << u->password
+                 << " | Status: " << u->status << endl;
         }
         temp = temp->next;
     }

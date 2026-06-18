@@ -29,6 +29,12 @@ vector<string> CSVReader::parseLine(const string &line)
     return result;
 }
 
+bool CSVReader::isBlankLine(const string &line)
+{
+    string trimmed = trim(line);
+    return trimmed.empty();
+}
+
 // ====================== READ STUDENTS ======================
 
 vector<Student> CSVReader::readStudents(const string &csvPath)
@@ -53,15 +59,20 @@ vector<Student> CSVReader::readStudents(const string &csvPath)
             continue;
         }
 
+        if (isBlankLine(line))
+            continue;
+
         vector<string> fields = parseLine(line);
 
-        if (fields.size() >= 4)
+        if (fields.size() >= 6)
         {
             Student student;
             student.student_id = fields[0];
             student.name = fields[1];
-            student.email = fields[2];
-            student.status = fields[3];
+            student.username = fields[2];
+            student.email = fields[3];
+            student.password = fields[4];
+            student.status = fields[5];
             students.push_back(student);
         }
     }
@@ -94,15 +105,17 @@ vector<Teacher> CSVReader::readTeachers(const string &csvPath)
             continue;
         }
 
+        if (isBlankLine(line))
+            continue;
+
         vector<string> fields = parseLine(line);
 
-        if (fields.size() >= 4)
+        if (fields.size() >= 3)
         {
             Teacher teacher;
             teacher.teacher_id = fields[0];
             teacher.name = fields[1];
-            teacher.username = fields[2];
-            teacher.password = fields[3];
+            teacher.course_id = fields[2];
             teachers.push_back(teacher);
         }
     }
@@ -135,6 +148,9 @@ vector<Course> CSVReader::readCourses(const string &csvPath)
             continue;
         }
 
+        if (isBlankLine(line))
+            continue;
+
         vector<string> fields = parseLine(line);
 
         if (fields.size() >= 4)
@@ -143,7 +159,7 @@ vector<Course> CSVReader::readCourses(const string &csvPath)
             course.course_id = fields[0];
             course.course_name = fields[1];
             course.teacher_id = fields[2];
-            course.credits = stoi(fields[3]);
+            course.credits = fields[3];
             courses.push_back(course);
         }
     }
@@ -176,15 +192,17 @@ vector<Enrollment> CSVReader::readEnrollments(const string &csvPath)
             continue;
         }
 
+        if (isBlankLine(line))
+            continue;
+
         vector<string> fields = parseLine(line);
 
-        if (fields.size() >= 4)
+        if (fields.size() >= 3)
         {
             Enrollment enrollment;
             enrollment.enrollment_id = fields[0];
             enrollment.student_id = fields[1];
             enrollment.course_id = fields[2];
-            enrollment.status = fields[3];
             enrollments.push_back(enrollment);
         }
     }
@@ -195,15 +213,15 @@ vector<Enrollment> CSVReader::readEnrollments(const string &csvPath)
 
 // ====================== READ USERS ======================
 
-vector<User> CSVReader::readUsers(const string &csvPath)
+vector<PendingEnrollment> CSVReader::readPendingEnrollments(const string &csvPath)
 {
-    vector<User> users;
+    vector<PendingEnrollment> pendingEnrollments;
     ifstream file(csvPath);
 
     if (!file.is_open())
     {
         cerr << "Error: Could not open file: " << csvPath << endl;
-        return users;
+        return pendingEnrollments;
     }
 
     string line;
@@ -217,19 +235,106 @@ vector<User> CSVReader::readUsers(const string &csvPath)
             continue;
         }
 
+        if (isBlankLine(line))
+            continue;
+
         vector<string> fields = parseLine(line);
 
-        if (fields.size() >= 4)
+        if (fields.size() >= 3)
         {
-            User user;
-            user.pending_id = fields[0];
-            user.name = fields[1];
-            user.username = fields[2];
-            user.password = fields[3];
-            users.push_back(user);
+            PendingEnrollment pending;
+            pending.enrollment_id = fields[0];
+            pending.student_id = fields[1];
+            pending.course_id = fields[2];
+            pendingEnrollments.push_back(pending);
         }
     }
 
     file.close();
-    return users;
+    return pendingEnrollments;
+}
+
+vector<Admin> CSVReader::readAdmins(const string &csvPath)
+{
+    vector<Admin> admins;
+    ifstream file(csvPath);
+
+    if (!file.is_open())
+    {
+        cerr << "Error: Could not open file: " << csvPath << endl;
+        return admins;
+    }
+
+    string line;
+    bool isHeader = true;
+
+    while (getline(file, line))
+    {
+        if (isHeader)
+        {
+            isHeader = false;
+            continue;
+        }
+
+        if (isBlankLine(line))
+            continue;
+
+        vector<string> fields = parseLine(line);
+
+        if (fields.size() >= 3)
+        {
+            Admin admin;
+            admin.admin_id = fields[0];
+            admin.username = fields[1];
+            admin.password = fields[2];
+            admins.push_back(admin);
+        }
+    }
+
+    file.close();
+    return admins;
+}
+
+vector<PendingUser> CSVReader::readPendingUsers(const string &csvPath)
+{
+    vector<PendingUser> pendingUsers;
+    ifstream file(csvPath);
+
+    if (!file.is_open())
+    {
+        cerr << "Error: Could not open file: " << csvPath << endl;
+        return pendingUsers;
+    }
+
+    string line;
+    bool isHeader = true;
+
+    while (getline(file, line))
+    {
+        if (isHeader)
+        {
+            isHeader = false;
+            continue;
+        }
+
+        if (isBlankLine(line))
+            continue;
+
+        vector<string> fields = parseLine(line);
+
+        if (fields.size() >= 6)
+        {
+            PendingUser user;
+            user.student_id = fields[0];
+            user.name = fields[1];
+            user.username = fields[2];
+            user.email = fields[3];
+            user.password = fields[4];
+            user.status = fields[5];
+            pendingUsers.push_back(user);
+        }
+    }
+
+    file.close();
+    return pendingUsers;
 }

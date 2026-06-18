@@ -1,11 +1,11 @@
-student_id,name,email,status
-S001,Alice Johnson,alice.j@uni.edu,Active
-S002,Bob Martinez,bob.m@uni.edu,Active
-S003,Carol White,carol.w@uni.edu,Inactive
-S004,David Lee,david.l@uni.edu,Active
-S005,Eva Brown,eva.b@uni.edu,Active
-S006,Frank Taylor,frank.t@uni.edu,Inactive
-S007,Grace Wilson,grace.w@uni.edu,Active
-S008,Henry Clark,henry.c@uni.edu,Active
-S009,Isla Scott,isla.s@uni.edu,Inactive
-S010,James King,james.k@uni.edu,Active
+student_id,name,username, email, password,status
+S001,Alice Johnson,alice.j,alice.j@uni.edu,pass1234,pending
+S002,Bob Martinez,bob.m,bob.m@uni.edu,secureB2,enroll
+S003,Carol White,carol.w,carol.w@uni.edu,cwPass99,pending
+S004,David Lee,david.l,david.l@uni.edu,dlee2024,enroll
+S005,Eva Brown,eva.b,eva.b@uni.edu,evaPass5,pending
+S006,Frank Taylor,frank.t,frank.t@uni.edu,ftaylor6,enroll
+S007,Grace Wilson,grace.w,grace.w@uni.edu,gwPass77,enroll
+S008,Henry Clark,henry.c,henry.c@uni.edu,hcPass88,enroll
+S009,Isla Scott,isla.s,isla.s@uni.edu,isPass99,enroll
+S010,James King,james.k,james.k@uni.edu,jkPass00,enroll

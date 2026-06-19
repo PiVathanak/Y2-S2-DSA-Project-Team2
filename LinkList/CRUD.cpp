@@ -16,6 +16,8 @@ struct dataList
     DataNode *tail;
 };
 
+void writeDataListToFiles(dataList *dl);
+
 // ====================== DATA LIST OPERATIONS ======================
 
 dataList *createDataList()
@@ -47,6 +49,66 @@ void addDataNode(dataList *dl, void *data, string dataType)
     dl->n++;
 }
 
+void writeDataListToFiles(dataList *dl)
+{
+    if (dl == nullptr || dl->head == nullptr)
+        return;
+
+    DataNode *temp = dl->head;
+    string fileName = "";
+
+    if (temp->dataType == "Student")
+        fileName = "DataBase/Students.csv";
+    else if (temp->dataType == "Teacher")
+        fileName = "DataBase/Teachers.csv";
+    else if (temp->dataType == "Course")
+        fileName = "DataBase/Courses.csv";
+
+    if (fileName.empty())
+        return;
+
+    bool fileExists = ifstream(fileName).good();
+    ofstream outFile(fileName, ios::app);
+    if (!outFile.is_open())
+        return;
+
+    if (!fileExists)
+    {
+        if (fileName == "DataBase/Students.csv")
+            outFile << "student_id,name,username, email, password,status\n";
+        else if (fileName == "DataBase/Teachers.csv")
+            outFile << "teacher_id,name,course_id\n";
+        else if (fileName == "DataBase/Courses.csv")
+            outFile << "course_id,course_name,teacher_id,credits\n";
+    }
+
+    while (temp != nullptr)
+    {
+        if (temp->dataType == "Student")
+        {
+            Student *s = (Student *)temp->data;
+            outFile << s->student_id << "," << s->name << ","
+                    << s->username << "," << s->email << ","
+                    << s->password << "," << s->status << "\n";
+        }
+        else if (temp->dataType == "Teacher")
+        {
+            Teacher *t = (Teacher *)temp->data;
+            outFile << t->teacher_id << "," << t->name << ","
+                    << t->course_id << "\n";
+        }
+        else if (temp->dataType == "Course")
+        {
+            Course *c = (Course *)temp->data;
+            outFile << c->course_id << "," << c->course_name << ","
+                    << c->teacher_id << "," << c->credits << "\n";
+        }
+        temp = temp->next;
+    }
+
+    outFile.close();
+}
+
 // ====================== UPDATE ======================
 
 void updateNode(dataList *dl, const string &id, const string &dataType, const string &field, const string &newValue)
@@ -72,6 +134,7 @@ void updateNode(dataList *dl, const string &id, const string &dataType, const st
                         s->password = newValue;
                     else if (field == "status")
                         s->status = newValue;
+                    writeDataListToFiles(dl);
                     cout << "Updated successfully!" << endl;
                     return;
                 }
@@ -85,6 +148,7 @@ void updateNode(dataList *dl, const string &id, const string &dataType, const st
                         t->name = newValue;
                     else if (field == "course_id")
                         t->course_id = newValue;
+                    writeDataListToFiles(dl);
                     cout << "Updated successfully!" << endl;
                     return;
                 }
@@ -100,6 +164,7 @@ void updateNode(dataList *dl, const string &id, const string &dataType, const st
                         c->teacher_id = newValue;
                     else if (field == "credits")
                         c->credits = newValue;
+                    writeDataListToFiles(dl);
                     cout << "Updated successfully!" << endl;
                     return;
                 }
@@ -241,9 +306,24 @@ void deleteNode(dataList *dl, const string &id, const string &dataType)
                         dl->tail = prev;
                     }
                 }
-                delete temp->data;
+                if (temp->dataType == "Student")
+                    delete (Student *)temp->data;
+                else if (temp->dataType == "Teacher")
+                    delete (Teacher *)temp->data;
+                else if (temp->dataType == "Course")
+                    delete (Course *)temp->data;
+                else if (temp->dataType == "Enrollment")
+                    delete (Enrollment *)temp->data;
+                else if (temp->dataType == "PendingEnrollment")
+                    delete (PendingEnrollment *)temp->data;
+                else if (temp->dataType == "Admin")
+                    delete (Admin *)temp->data;
+                else if (temp->dataType == "PendingUser")
+                    delete (PendingUser *)temp->data;
+
                 delete temp;
                 dl->n--;
+                writeDataListToFiles(dl);
                 cout << "Deleted successfully!" << endl;
                 return;
             }
@@ -331,7 +411,22 @@ void deleteDataList(dataList *dl)
     while (temp != nullptr)
     {
         DataNode *next = temp->next;
-        delete (void *)temp->data;
+
+        if (temp->dataType == "Student")
+            delete (Student *)temp->data;
+        else if (temp->dataType == "Teacher")
+            delete (Teacher *)temp->data;
+        else if (temp->dataType == "Course")
+            delete (Course *)temp->data;
+        else if (temp->dataType == "Enrollment")
+            delete (Enrollment *)temp->data;
+        else if (temp->dataType == "PendingEnrollment")
+            delete (PendingEnrollment *)temp->data;
+        else if (temp->dataType == "Admin")
+            delete (Admin *)temp->data;
+        else if (temp->dataType == "PendingUser")
+            delete (PendingUser *)temp->data;
+
         delete temp;
         temp = next;
     }

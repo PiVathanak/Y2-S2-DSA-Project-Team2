@@ -2,7 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include "../Models.cpp"
+#include "../tools/Models.cpp"
 #include "../LinkList/LinkedList.cpp"
 #include "../Queue/Queue.cpp"
 

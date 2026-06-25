@@ -5,9 +5,9 @@
 #include "../LinkList/LinkedList.cpp"
 #include "../Queue/Queue.cpp"
 #include "../Stack/Stack.cpp"
-#include "../HashTable/HashTable.cpp"
 #include "../Sorting/Sorting.cpp"
 #include "../tools/CSVManager.cpp"
+#include <cctype>
 
 using namespace std;
 
@@ -53,6 +53,15 @@ private:
 
 public:
     static void render(string userId, LinkedList& courseList, Queue& pendingQueue, Stack& sessionStack, LinkedList& enrollList, LinkedList& teacherList) {
+        HashTable courseHash;
+        ListNode* cNode = courseList.head;
+        while (cNode) {
+            Course* c = (Course*)cNode->data;
+            courseHash.insert(c->course_id, c);
+            courseHash.insert(c->course_name, c);
+            cNode = cNode->next;
+        }
+
         while (true) {
             cout << "\n--- Student Menu ---" << endl;
             cout << "1. View available courses" << endl;

@@ -4,8 +4,8 @@
 #include <iomanip>
 #include "../tools/Models.cpp"
 #include "../LinkList/LinkedList.cpp"
+#include "../Tree/BST.cpp"
 #include "../HashTable/HashTable.cpp"
-#include "../Sorting/Sorting.cpp"
 
 
 using namespace std;
@@ -67,32 +67,34 @@ public:
 
                 if (choice == 1) {
                     cout << "\n--- Enrolled Students (Sorted A-Z) ---" << endl;
+                    // Build BST from roster — in-order traversal gives alphabetical order
+                    BST classRoster;
+                    ListNode* rNode = rosterList.head;
+                    while (rNode) {
+                        classRoster.insert((Student*)rNode->data);
+                        rNode = rNode->next;
+                    }
+
                     int n = rosterList.count;
                     if (n == 0) {
                         cout << "No students enrolled." << endl;
                     } else {
                         Student** arr = new Student*[n];
-                        ListNode* curr = rosterList.head;
-                        int i = 0;
-                        while(curr) {
-                            arr[i++] = (Student*)curr->data;
-                            curr = curr->next;
-                        }
-                        
-                        Sorting::mergeSortStudentsByName(arr, n);
+                        int collected = 0;
+                        classRoster.collectInOrder(arr, collected);
 
                         cout << "+" << string(10, '-') << "+" << string(30, '-') << "+" << string(35, '-') << "+" << endl;
                         cout << "| " << left << setw(8) << "ID" << " | " << setw(28) << "Name" << " | " << setw(33) << "Email" << " |" << endl;
                         cout << "+" << string(10, '-') << "+" << string(30, '-') << "+" << string(35, '-') << "+" << endl;
-                        
-                        for (int j = 0; j < n; j++) {
+
+                        for (int j = 0; j < collected; j++) {
                             Student* s = arr[j];
-                            cout << "| " << left << setw(8) << s->student_id 
-                                 << " | " << setw(28) << s->name 
+                            cout << "| " << left << setw(8) << s->student_id
+                                 << " | " << setw(28) << s->name
                                  << " | " << setw(33) << s->email << " |" << endl;
                         }
                         cout << "+" << string(10, '-') << "+" << string(30, '-') << "+" << string(35, '-') << "+" << endl;
-                        
+
                         delete[] arr;
                     }
                 } else if (choice == 2) {

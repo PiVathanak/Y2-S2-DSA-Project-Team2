@@ -184,12 +184,9 @@ void enrollCourse(string studentID)
     cout << "Status: PENDING" << endl;
 }
 
-int main()
+void test()
 {
-
     string studentID = "S001";
 
     enrollCourse(studentID);
-
-    return 0;
 }

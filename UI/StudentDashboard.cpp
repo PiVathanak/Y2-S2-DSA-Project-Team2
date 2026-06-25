@@ -20,7 +20,22 @@ public:
         studentID = "";
         studentEmail = "";
     }
+    void enrollCourse()
+    {
+        cout << "\n--- ENROLL COURSE ---" << endl;
 
+        system("..\\Stack\\studentEnrollment.exe");
+
+        cout << "\nEnrollment request submitted." << endl;
+    }
+    void undoEnrollment()
+    {
+        cout << "\n--- UNDO ENROLLMENT ---" << endl;
+
+        system("..\\Stack\\EnrollmentUndoStack.exe");
+
+        cout << "\nUndo completed." << endl;
+    }
     void displayStudentHeader()
     {
         cout << "\n=====================================" << endl;
@@ -39,11 +54,13 @@ public:
         cout << "1. View Enrolled Courses" << endl;
         cout << "2. View Grades" << endl;
         cout << "3. View Course Details" << endl;
-        cout << "4. Assignment Submission" << endl;
-        cout << "5. Message Instructor" << endl;
-        cout << "6. Update Profile" << endl;
-        cout << "7. Logout" << endl;
-        cout << "\nEnter your choice (1-7): ";
+        cout << "4. Enroll Course" << endl;
+        cout << "5. Undo Cancel Enrollment" << endl;
+        cout << "6. Assignment Submission" << endl;
+        cout << "7. Message Instructor" << endl;
+        cout << "8. Update Profile" << endl;
+        cout << "9. Logout" << endl;
+        cout << "\nEnter your choice (1-9): ";
     }
 
     int getUserChoice()
@@ -198,7 +215,7 @@ public:
             cout << "[Email update - Not yet connected]" << endl;
             break;
         }
-            
+
         case 2:
         {
             cout << "Enter new password: ";
@@ -207,7 +224,7 @@ public:
             cout << "[Password update - Not yet connected]" << endl;
             break;
         }
-            
+
         case 3:
         {
             cout << "Enter new name: ";
@@ -215,7 +232,6 @@ public:
             cout << "[Profile update - Not yet connected]" << endl;
             break;
         }
-            
         }
     }
 
@@ -233,15 +249,22 @@ public:
             viewCourseDetails();
             break;
         case 4:
-            submitAssignment();
+            enrollCourse();
             break;
         case 5:
-            messageInstructor();
+            undoEnrollment();
             break;
         case 6:
-            updateProfile();
+            submitAssignment();
             break;
         case 7:
+            messageInstructor();
+            break;
+        case 8:
+            updateProfile();
+            break;
+
+        case 9:
             cout << "\nLogging out..." << endl;
             return;
         default:

@@ -1,5 +1,4 @@
-#ifndef CSVREADER_H
-#define CSVREADER_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -85,4 +84,3 @@ private:
     static bool isBlankLine(const string &line);
 };
 
-#endif // CSVREADER_H

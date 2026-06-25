@@ -1,0 +1,91 @@
+#include <iostream>
+#include <string>
+
+// Include everything in dependency order
+#include "tools/Models.cpp"
+#include "LinkList/LinkedList.cpp"
+#include "Queue/Queue.cpp"
+#include "Stack/Stack.cpp"
+#include "Tree/BST.cpp"
+#include "HashTable/HashTable.cpp"
+#include "Sorting/Sorting.cpp"
+#include "tools/CSVManager.cpp"
+
+// UI components
+#include "UI/LoginUI.cpp"
+#include "UI/RegisterUI.cpp"
+#include "UI/AdminDashboard.cpp"
+#include "UI/TeacherDashboard.cpp"
+#include "UI/StudentDashboard.cpp"
+
+using namespace std;
+
+// Global Data Structures
+LinkedList adminList;
+LinkedList teacherList;
+LinkedList studentList;
+LinkedList courseList;
+LinkedList enrollList;
+Queue pendingQueue;
+Stack sessionStack; // Only used for student session
+
+void initializeData() {
+    CSVManager::loadAdmins(adminList);
+    CSVManager::loadTeachers(teacherList);
+    CSVManager::loadStudents(studentList);
+    CSVManager::loadCourses(courseList);
+    CSVManager::loadEnrollments(enrollList);
+    CSVManager::loadPendingEnrollments(pendingQueue);
+}
+
+int main() {
+    cout << "Initializing System Data..." << endl;
+    initializeData();
+    cout << "Data loaded." << endl;
+
+    while(true) {
+        cout << "\n== Welcome ==" << endl;
+        cout << "1. Login" << endl;
+        cout << "2. Register (for new student)" << endl;
+        cout << "0. Exit" << endl;
+        cout << "Select: ";
+        
+        int choice;
+        if (!(cin >> choice)) {
+            cin.clear();
+            cin.ignore(10000, '\n');
+            continue;
+        }
+
+        if (choice == 0) break;
+
+        if (choice == 1) {
+            string role, userId;
+            if (LoginUI::login(adminList, studentList, teacherList, role, userId)) { // check all 3 role csv
+                if (role == "Admin") {
+                    AdminDashboard::render(studentList, pendingQueue, enrollList, courseList);
+                } else if (role == "Teacher") {
+                    TeacherDashboard::render(userId, teacherList, enrollList, studentList);
+                } else if (role == "Student") {
+                    // Start fresh session stack for the student
+                    sessionStack.clear();
+                    // Load existing pending enrollments for student into sessionStack
+                    ListNode* curr = pendingQueue.getFront();
+                    while (curr) {
+                        PendingEnrollment* pe = (PendingEnrollment*)curr->data;
+                        if (pe->student_id == userId) {
+                            sessionStack.push(pe);
+                        }
+                        curr = curr->next;
+                    }
+                    StudentDashboard::render(userId, courseList, pendingQueue, sessionStack, enrollList, teacherList);
+                }
+            }
+        } else if (choice == 2) {
+            RegisterUI::render(studentList);
+        }
+    }
+    
+    cout << "Exiting system. Goodbye!" << endl;
+    return 0;
+}

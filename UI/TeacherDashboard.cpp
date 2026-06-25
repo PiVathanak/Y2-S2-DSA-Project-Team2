@@ -1,9 +1,12 @@
 #pragma once
 #include <iostream>
 #include <string>
+#include <iomanip>
 #include "../tools/Models.cpp"
 #include "../LinkList/LinkedList.cpp"
-#include "../Tree/BST.cpp"
+#include "../HashTable/HashTable.cpp"
+#include "../Sorting/Sorting.cpp"
+#include <cctype>
 
 using namespace std;
 
@@ -44,7 +47,7 @@ public:
             if (choice == 0) break;
 
             if (choice == 1 || choice == 2) {
-                BST classRoster;
+                LinkedList rosterList;
                 ListNode* eNode = enrollList.head;
                 while (eNode) {
                     Enrollment* e = (Enrollment*)eNode->data;
@@ -53,7 +56,7 @@ public:
                         while(sNode) {
                             Student* s = (Student*)sNode->data;
                             if (s->student_id == e->student_id && s->status == "enrolled") {
-                                classRoster.insert(s);
+                                rosterList.append(s);
                                 break;
                             }
                             sNode = sNode->next;
@@ -64,26 +67,75 @@ public:
 
                 if (choice == 1) {
                     cout << "\n--- Enrolled Students (Sorted A-Z) ---" << endl;
-                    classRoster.displaySorted();
+                    int n = rosterList.count;
+                    if (n == 0) {
+                        cout << "No students enrolled." << endl;
+                    } else {
+                        Student** arr = new Student*[n];
+                        ListNode* curr = rosterList.head;
+                        int i = 0;
+                        while(curr) {
+                            arr[i++] = (Student*)curr->data;
+                            curr = curr->next;
+                        }
+                        
+                        Sorting::mergeSortStudentsByName(arr, n);
+
+                        cout << "+" << string(10, '-') << "+" << string(30, '-') << "+" << string(35, '-') << "+" << endl;
+                        cout << "| " << left << setw(8) << "ID" << " | " << setw(28) << "Name" << " | " << setw(33) << "Email" << " |" << endl;
+                        cout << "+" << string(10, '-') << "+" << string(30, '-') << "+" << string(35, '-') << "+" << endl;
+                        
+                        for (int j = 0; j < n; j++) {
+                            Student* s = arr[j];
+                            cout << "| " << left << setw(8) << s->student_id 
+                                 << " | " << setw(28) << s->name 
+                                 << " | " << setw(33) << s->email << " |" << endl;
+                        }
+                        cout << "+" << string(10, '-') << "+" << string(30, '-') << "+" << string(35, '-') << "+" << endl;
+                        
+                        delete[] arr;
+                    }
                 } else if (choice == 2) {
+                    HashTable ht;
+                    ListNode* currNode = rosterList.head;
+                    while (currNode) {
+                        Student* s = (Student*)currNode->data;
+                        string lowerName = "";
+                        for (char c : s->name) lowerName += tolower(c);
+                        
+                        string prefix = "";
+                        for (char c : lowerName) {
+                            prefix += c;
+                            ht.insert(prefix, s);
+                        }
+                        currNode = currNode->next;
+                    }
+
                     cout << "\nEnter student name to search: ";
                     string searchName;
                     cin >> ws; getline(cin, searchName);
                     
-                    BSTNode* current = classRoster.root;
-                    bool found = false;
-                    while (current != nullptr) {
-                        if (current->data->name == searchName) {
-                            cout << "Found: " << current->data->name << " (ID: " << current->data->student_id << ", Email: " << current->data->email << ")" << endl;
-                            found = true;
-                            break;
-                        } else if (searchName < current->data->name) {
-                            current = current->left;
-                        } else {
-                            current = current->right;
+                    string lowerSearch = "";
+                    for (char c : searchName) lowerSearch += tolower(c);
+                    
+                    void* results[100];
+                    int count = 0;
+                    ht.search(lowerSearch, results, count, 100);
+                    
+                    if (count > 0) {
+                        cout << "\n--- Search Results ---" << endl;
+                        cout << "+" << string(10, '-') << "+" << string(30, '-') << "+" << string(35, '-') << "+" << endl;
+                        cout << "| " << left << setw(8) << "ID" << " | " << setw(28) << "Name" << " | " << setw(33) << "Email" << " |" << endl;
+                        cout << "+" << string(10, '-') << "+" << string(30, '-') << "+" << string(35, '-') << "+" << endl;
+                        
+                        for (int i = 0; i < count; i++) {
+                            Student* s = (Student*)results[i];
+                            cout << "| " << left << setw(8) << s->student_id 
+                                 << " | " << setw(28) << s->name 
+                                 << " | " << setw(33) << s->email << " |" << endl;
                         }
-                    }
-                    if (!found) {
+                        cout << "+" << string(10, '-') << "+" << string(30, '-') << "+" << string(35, '-') << "+" << endl;
+                    } else {
                         cout << "Student not found in your course." << endl;
                     }
                 }

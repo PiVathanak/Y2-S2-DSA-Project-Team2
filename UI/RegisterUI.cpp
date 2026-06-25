@@ -50,6 +50,6 @@ public:
         CSVManager::saveStudents(studentList);
         
         cout << "Registration successful! Your ID is " << newId << endl;
-        cout << "Please wait for Admin approval." << endl;
+        cout << "You can now Login to the Account" << endl;
     }
 };

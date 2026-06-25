@@ -8,12 +8,52 @@
 #include "../HashTable/HashTable.cpp"
 #include "../Sorting/Sorting.cpp"
 #include "../tools/CSVManager.cpp"
+#include <cctype>
 
 using namespace std;
 
 class StudentDashboard {
+private:
+    static string toLower(const string& s) {
+        string res = s;
+        for (size_t i = 0; i < res.length(); ++i) {
+            res[i] = tolower(res[i]);
+        }
+        return res;
+    }
+
+    static void displayCoursesTable(Course** arr, int count, string title, LinkedList& teacherList) {
+        cout << "=== " << title << " ===" << endl;
+        cout << "+-------+--------------------------------+----------------------+---------+" << endl;
+        cout << "| C.ID  | Course Name                    | Teacher Name         | Credits |" << endl;
+        cout << "+-------+--------------------------------+----------------------+---------+" << endl;
+        if (count == 0) {
+            cout << "| " << left << setw(70) << "No courses found." << " |" << endl;
+        }
+        for (int i = 0; i < count; i++) {
+            Course* c = arr[i];
+            
+            string teacherName = "Unknown";
+            ListNode* tNode = teacherList.head;
+            while (tNode) {
+                Teacher* t = (Teacher*)tNode->data;
+                if (t->teacher_id == c->teacher_id) {
+                    teacherName = t->name;
+                    break;
+                }
+                tNode = tNode->next;
+            }
+            
+            cout << "| " << left << setw(5) << c->course_id
+                 << " | " << left << setw(30) << (c->course_name.length() > 30 ? c->course_name.substr(0,30) : c->course_name)
+                 << " | " << left << setw(20) << (teacherName.length() > 20 ? teacherName.substr(0,20) : teacherName)
+                 << " | " << left << setw(7) << c->credits << " |" << endl;
+        }
+        cout << "+-------+--------------------------------+----------------------+---------+" << endl;
+    }
+
 public:
-    static void render(string userId, LinkedList& courseList, Queue& pendingQueue, Stack& sessionStack, LinkedList& enrollList) {
+    static void render(string userId, LinkedList& courseList, Queue& pendingQueue, Stack& sessionStack, LinkedList& enrollList, LinkedList& teacherList) {
         HashTable courseHash;
         ListNode* cNode = courseList.head;
         while (cNode) {
@@ -40,18 +80,37 @@ public:
             if (choice == 0) break;
 
             if (choice == 1) {
-                cout << "\n--- All Courses ---" << endl;
+                int count = courseList.count;
+                Course** arr = new Course*[count];
                 ListNode* curr = courseList.head;
-                while (curr) {
-                    Course* c = (Course*)curr->data;
-                    cout << c->course_id << " | " << c->course_name << " (Credits: " << c->credits << ")" << endl;
+                int i = 0;
+                while (curr && i < count) {
+                    arr[i++] = (Course*)curr->data;
                     curr = curr->next;
                 }
+                displayCoursesTable(arr, count, "All Courses", teacherList);
+                delete[] arr;
                 while (true) {
                     cout << "\nEnter Course ID to enroll (or '0' to back): ";
                     string cid;
                     cin >> cid;
                     if (cid == "0") break;
+
+                    bool isValidCourse = false;
+                    ListNode* clNode = courseList.head;
+                    while (clNode) {
+                        Course* c = (Course*)clNode->data;
+                        if (c->course_id == cid) {
+                            isValidCourse = true;
+                            break;
+                        }
+                        clNode = clNode->next;
+                    }
+
+                    if (!isValidCourse) {
+                        cout << "Invalid Course ID! Please try again." << endl;
+                        continue;
+                    }
 
                     bool exists = false;
                     
@@ -90,36 +149,51 @@ public:
                         
                         cout << "successfully added to list Please wait for admin approval" << endl;
                     }
-
-                    cout << "do you want to enroll in another course (Y/n)? ";
-                    string ans;
-                    cin >> ans;
-                    if (ans != "Y" && ans != "y") break;
                 }
             } else if (choice == 2) {
                 while (true) {
                     cout << "\n--- My Courses ---" << endl;
-                    cout << "Approved:" << endl;
+                    
+                    int enrolledCount = 0;
+                    Course* enrolledArr[100];
                     ListNode* eNode = enrollList.head;
                     while(eNode) {
                         Enrollment* e = (Enrollment*)eNode->data;
                         if (e->student_id == userId) {
-                            cout << "- " << e->course_id << endl;
+                            ListNode* cNode = courseList.head;
+                            while (cNode) {
+                                Course* c = (Course*)cNode->data;
+                                if (c->course_id == e->course_id) {
+                                    enrolledArr[enrolledCount++] = c;
+                                    break;
+                                }
+                                cNode = cNode->next;
+                            }
                         }
                         eNode = eNode->next;
                     }
+                    displayCoursesTable(enrolledArr, enrolledCount, "Enrolled", teacherList);
+                    cout << endl;
                     
-                    cout << "\nPending:" << endl;
                     int pendingCount = 0;
+                    Course* pendingArr[100];
                     ListNode* pNode = pendingQueue.getFront();
                     while(pNode) {
                         PendingEnrollment* pe = (PendingEnrollment*)pNode->data;
                         if (pe->student_id == userId) {
-                            cout << "- " << pe->course_id << endl;
-                            pendingCount++;
+                            ListNode* cNode = courseList.head;
+                            while (cNode) {
+                                Course* c = (Course*)cNode->data;
+                                if (c->course_id == pe->course_id) {
+                                    pendingArr[pendingCount++] = c;
+                                    break;
+                                }
+                                cNode = cNode->next;
+                            }
                         }
                         pNode = pNode->next;
                     }
+                    displayCoursesTable(pendingArr, pendingCount, "Pending", teacherList);
 
                     if (pendingCount > 0 && !sessionStack.isEmpty()) {
                         cout << "\nDo you want to undo your last pending enrollment? (Y/N): ";
@@ -161,26 +235,23 @@ public:
                 string term;
                 cin >> ws; getline(cin, term);
                 
-                void* results[100];
+                string lowerTerm = toLower(term);
+                Course* results[100];
                 int count = 0;
-                courseHash.search(term, results, count, 100);
+                ListNode* curr = courseList.head;
+                while (curr && count < 100) {
+                    Course* c = (Course*)curr->data;
+                    if (toLower(c->course_name).find(lowerTerm) != string::npos || toLower(c->course_id).find(lowerTerm) != string::npos) {
+                        results[count++] = c;
+                    }
+                    curr = curr->next;
+                }
                 
                 if (count == 0) {
-                    cout << "Value not found" << endl;
+                    cout << "Course not found." << endl;
                 } else {
-                    Course** foundCourses = new Course*[count];
-                    for (int i = 0; i < count; i++) {
-                        foundCourses[i] = (Course*)results[i];
-                    }
-                    
-                    Sorting::mergeSortCoursesByName(foundCourses, count);
-                    
-                    cout << "\n--- Search Results ---" << endl;
-                    for (int i = 0; i < count; i++) {
-                        cout << foundCourses[i]->course_id << " | " << foundCourses[i]->course_name << " (Teacher: " << foundCourses[i]->teacher_id << ")" << endl;
-                    }
-                    
-                    delete[] foundCourses;
+                    Sorting::mergeSortCoursesByName(results, count);
+                    displayCoursesTable(results, count, "Search Results", teacherList);
                 }
             }
         }

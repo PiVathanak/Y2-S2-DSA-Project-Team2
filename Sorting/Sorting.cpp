@@ -1,4 +1,10 @@
+#pragma once
+#include "../Models.cpp"
+#include <iostream>
+using namespace std;
 
+class Sorting {
+public:
     // ================= MERGE SORT FOR COURSES =================
     static void mergeCourses(Course** arr, int left, int mid, int right) {
         int n1 = mid - left + 1;
@@ -82,3 +88,4 @@
     static void mergeSortStudentsByName(Student** arr, int n) {
         mergeSortStudentsRec(arr, 0, n - 1);
     }
+};

@@ -1,1 +1,3 @@
-enrollment_id, student_id, course_id
+enrollment_id,student_id,course_id
+3,103,201
+4,104,203

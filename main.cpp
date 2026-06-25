@@ -6,7 +6,6 @@
 #include "LinkList/LinkedList.cpp"
 #include "Queue/Queue.cpp"
 #include "Stack/Stack.cpp"
-#include "Tree/BST.cpp"
 #include "HashTable/HashTable.cpp"
 #include "Sorting/Sorting.cpp"
 #include "tools/CSVManager.cpp"

@@ -6,7 +6,7 @@
 #include "../LinkList/LinkedList.cpp"
 #include "../HashTable/HashTable.cpp"
 #include "../Sorting/Sorting.cpp"
-#include <cctype>
+
 
 using namespace std;
 

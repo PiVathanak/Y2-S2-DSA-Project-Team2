@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <string>
+#include <iomanip>
 #include "../tools/Models.cpp"
 #include "../LinkList/LinkedList.cpp"
 #include "../Queue/Queue.cpp"
@@ -9,6 +10,65 @@
 using namespace std;
 
 class AdminDashboard {
+private:
+    static void displayStudentsTable(LinkedList& studentList) {
+        int n = studentList.count;
+        if (n == 0) {
+            cout << "No students found." << endl;
+            return;
+        }
+
+        Student** arr = new Student*[n];
+        ListNode* curr = studentList.head;
+        int i = 0;
+        while(curr && i < n) {
+            arr[i] = (Student*)curr->data;
+            curr = curr->next;
+            i++;
+        }
+
+        // Bubble sort by name alphabetically
+        for (int i = 0; i < n - 1; i++) {
+            for (int j = 0; j < n - i - 1; j++) {
+                if (arr[j]->name > arr[j+1]->name) {
+                    Student* temp = arr[j];
+                    arr[j] = arr[j+1];
+                    arr[j+1] = temp;
+                }
+            }
+        }
+
+        auto printTable = [&](const string& statusFilter, const string& title) {
+            cout << "=== " << title << " ===" << endl;
+            cout << "+------+----------------------+-----------------+---------------------------+----------+" << endl;
+            cout << "| ID   | Name                 | Username        | Email                     | Status   |" << endl;
+            cout << "+------+----------------------+-----------------+---------------------------+----------+" << endl;
+            bool found = false;
+            for (int k = 0; k < n; k++) {
+                if (arr[k]->status == statusFilter || (statusFilter == "pending" && arr[k]->status != "enrolled")) {
+                    if (arr[k]->status == statusFilter) {
+                        cout << "| " << left << setw(4) << arr[k]->student_id 
+                             << " | " << left << setw(20) << arr[k]->name 
+                             << " | " << left << setw(15) << arr[k]->username 
+                             << " | " << left << setw(25) << arr[k]->email 
+                             << " | " << left << setw(8) << arr[k]->status << " |" << endl;
+                        found = true;
+                    }
+                }
+            }
+            if (!found) {
+                cout << "| " << left << setw(84) << "No students in this category." << " |" << endl;
+            }
+            cout << "+------+----------------------+-----------------+---------------------------+----------+" << endl;
+        };
+
+        printTable("enrolled", "Enrolled");
+        cout << endl;
+        printTable("pending", "Pending");
+
+        delete[] arr;
+    }
+
 public:
     static void render(LinkedList& studentList, Queue& pendingQueue, LinkedList& enrollList) {
         while (true) {
@@ -49,6 +109,7 @@ public:
             }
             // update student info
             else if (choice == 2) {
+                displayStudentsTable(studentList);
                 string idToUpdate;
                 cout << "Student ID to update: ";
                 cin >> idToUpdate;
@@ -86,13 +147,7 @@ public:
             }
             // view all students
             else if (choice == 4) {
-                cout << "ID\tName\tUsername\tEmail\tStatus" << endl;
-                ListNode* curr = studentList.head;
-                while(curr) {
-                    Student* s = (Student*)curr->data;
-                    cout << s->student_id << "\t" << s->name << "\t" << s->username << "\t" << s->email << "\t" << s->status << endl;
-                    curr = curr->next;
-                }
+                displayStudentsTable(studentList);
             }
             // view pending enrollments
             else if (choice == 5) {

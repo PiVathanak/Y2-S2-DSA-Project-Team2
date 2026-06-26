@@ -1,11 +1,11 @@
 student_id,name,email,status
-S001,Alice Johnson,alice.j@uni.edu,Active
-S002,Bob Martinez,bob.m@uni.edu,Active
+S001,Alice Johnson,alice.j@uni.edu,Inactive
+S002,Bob Martinez,bob.m@uni.edu,Inactive
 S003,Carol White,carol.w@uni.edu,Inactive
-S004,David Lee,david.l@uni.edu,Active
+S004,David Lee,david.l@uni.edu,Inactive
 S005,Eva Brown,eva.b@uni.edu,Active
 S006,Frank Taylor,frank.t@uni.edu,Inactive
-S007,Grace Wilson,grace.w@uni.edu,Active
-S008,Henry Clark,henry.c@uni.edu,Active
+S007,Grace Wilson,grace.w@uni.edu,Inactive
+S008,Henry Clark,henry.c@uni.edu,Inactive
 S009,Isla Scott,isla.s@uni.edu,Inactive
-S010,James King,james.k@uni.edu,Active
+S010,James King,james.k@uni.edu,Inactive

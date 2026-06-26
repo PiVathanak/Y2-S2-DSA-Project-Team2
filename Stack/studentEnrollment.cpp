@@ -130,7 +130,43 @@ string generateEnrollmentID(){
 
     return id;
 }
+string getActiveStudentID(){
 
+    ifstream file("../DataBase/students.csv");
+
+    if(!file){
+        cout<<"Cannot open students.csv"<<endl;
+        return "";
+    }
+
+    string line;
+
+    getline(file,line); // skip header
+
+    while(getline(file,line)){
+
+        stringstream ss(line);
+
+        string studentID;
+        string name;
+        string email;
+        string status;
+
+        getline(ss,studentID,',');
+        getline(ss,name,',');
+        getline(ss,email,',');
+        getline(ss,status);
+
+        if(status == "Active"){
+            file.close();
+            return studentID;
+        }
+    }
+
+    file.close();
+
+    return "";
+}
 void saveEnrollmentRequest(
     string enrollmentID,
     string studentID,
@@ -187,9 +223,16 @@ void enrollCourse(string studentID)
 int main()
 {
 
-    string studentID = "S001";
+    string studentID = getActiveStudentID();
 
-    enrollCourse(studentID);
+if(studentID.empty()){
+    cout<<"No active student found"<<endl;
+    return 0;
+}
+
+cout<<"Current Student: "<<studentID<<endl;
+
+enrollCourse(studentID);
 
     return 0;
 }

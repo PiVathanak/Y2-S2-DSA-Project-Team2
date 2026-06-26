@@ -55,6 +55,7 @@ struct User
 class CSVReader
 {
 public:
+    static vector<vector<string>> readCSVRows(const string &csvPath);
     static vector<Student> readStudents(const string &csvPath);
     static vector<Teacher> readTeachers(const string &csvPath);
     static vector<Course> readCourses(const string &csvPath);

@@ -29,6 +29,34 @@ vector<string> CSVReader::parseLine(const string &line)
     return result;
 }
 
+// ====================== GENERIC CSV ROWS ======================
+
+vector<vector<string>> CSVReader::readCSVRows(const string &csvPath)
+{
+    vector<vector<string>> rows;
+    ifstream file(csvPath);
+
+    if (!file.is_open())
+    {
+        cerr << "Error: Could not open file: " << csvPath << endl;
+        return rows;
+    }
+
+    string line;
+    while (getline(file, line))
+    {
+        if (line.empty())
+        {
+            continue;
+        }
+
+        rows.push_back(parseLine(line));
+    }
+
+    file.close();
+    return rows;
+}
+
 // ====================== READ STUDENTS ======================
 
 vector<Student> CSVReader::readStudents(const string &csvPath)

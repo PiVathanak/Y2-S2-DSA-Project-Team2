@@ -3,6 +3,7 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include "../tools/CSVReader.cpp"
 using namespace std;
 
 struct UndoRecord
@@ -10,7 +11,6 @@ struct UndoRecord
     string enrollmentID;
     string studentID;
     string courseID;
-    string status;
 };
 
 struct Element
@@ -76,7 +76,6 @@ UndoRecord peek(Stack *s)
         empty.enrollmentID = "";
         empty.studentID = "";
         empty.courseID = "";
-        empty.status = "";
 
         return empty;
     }
@@ -111,7 +110,7 @@ void display(Stack *s)
 
     while (e != nullptr)
     {
-        cout << "Enrollment ID : " << e->data.courseID << endl;
+        cout << "Enrollment ID : " << e->data.enrollmentID << endl;
         cout << "Student ID  : " << e->data.studentID << endl;
         cout << "Course ID  : " << e->data.courseID << endl;
 
@@ -122,78 +121,66 @@ void display(Stack *s)
 }
 string getActiveStudentID()
 {
+    vector<vector<string>> rows = CSVReader::readCSVRows("../DataBase/Students.csv");
 
-    ifstream file("../DataBase/students.csv");
-
-    if (!file)
+    for (const auto &fields : rows)
     {
-        return "";
-    }
-
-    string line;
-    getline(file, line); // Skip header
-
-    while (getline(file, line))
-    {
-
-        stringstream ss(line);
-
-        string studentID;
-        string name;
-        string email;
-        string status;
-
-        getline(ss, studentID, ',');
-        getline(ss, name, ',');
-        getline(ss, email, ',');
-        getline(ss, status);
-
-        if (status == "Active")
+        if (fields.size() > 6 && fields[6] == "Online")
         {
-            file.close();
-            return studentID;
+            return fields[0];
         }
     }
 
-    file.close();
     return "";
 }
-void displayMyEnrollments(string studentID)
+void displayPendingEnrollmentsForStudent(string studentID, string title)
 {
+    vector<vector<string>> rows = CSVReader::readCSVRows("../DataBase/PendingEnrollment.csv");
 
-    ifstream file("../DataBase/PendingEnrollment.csv");
+    bool found = false;
 
-    string line;
+    cout << "\n"
+         << title << "\n\n";
 
-    cout << "\n===== My Pending Enrollments =====\n\n";
-
-    while (getline(file, line))
+    for (const auto &fields : rows)
     {
-
-        stringstream ss(line);
-
-        string enrollmentID;
-        string sid;
-        string courseID;
-        string status;
-
-        getline(ss, enrollmentID, ',');
-        getline(ss, sid, ',');
-        getline(ss, courseID, ',');
-        getline(ss, status);
-
-        if (sid == studentID)
+        if (fields.size() < 3)
         {
-            cout << enrollmentID << " | "
-                 << courseID << " | "
-                 << status << endl;
+            continue;
+        }
+
+        if (fields[1] == studentID)
+        {
+            found = true;
+
+            cout << "Enrollment ID : " << fields[0] << endl;
+            cout << "Course ID     : " << fields[2] << endl;
+            cout << "-----------------------------" << endl;
         }
     }
 
-    file.close();
+    if (!found)
+    {
+        cout << "You have no pending enrollments." << endl;
+    }
+}
+
+void displayMyEnrollments(string studentID)
+{
+    displayPendingEnrollmentsForStudent(studentID, "===== My Pending Enrollments =====");
 }
 void restoreToCSV(UndoRecord record)
 {
+    ifstream check("../DataBase/PendingEnrollment.csv");
+    bool hasContent = false;
+    string firstLine;
+
+    if (getline(check, firstLine))
+    {
+        hasContent = true;
+    }
+
+    check.close();
 
     ofstream file(
         "../DataBase/PendingEnrollment.csv",
@@ -205,11 +192,15 @@ void restoreToCSV(UndoRecord record)
         return;
     }
 
+    if (!hasContent)
+    {
+        file << "enrollment_id,student_id,course_id" << endl;
+    }
+
     file
         << record.enrollmentID << ","
         << record.studentID << ","
-        << record.courseID << ","
-        << record.status
+        << record.courseID
         << endl;
 
     file.close();
@@ -220,52 +211,58 @@ void cancelEnrollment(
     string enrollmentID)
 {
 
-    ifstream file("../DataBase/PendingEnrollment.csv");
+    vector<vector<string>> rows = CSVReader::readCSVRows("../DataBase/PendingEnrollment.csv");
 
-    vector<string> rows;
-
-    string line;
-
+    vector<vector<string>> updatedRows;
     bool found = false;
 
-    while (getline(file, line))
+    for (const auto &fields : rows)
     {
-
-        if (line.empty())
+        if (fields.size() < 3)
         {
             continue;
         }
 
-        stringstream ss(line);
-
         UndoRecord record;
-
-        getline(ss, record.enrollmentID, ',');
-        getline(ss, record.studentID, ',');
-        getline(ss, record.courseID, ',');
-        getline(ss, record.status);
+        record.enrollmentID = fields[0];
+        record.studentID = fields[1];
+        record.courseID = fields[2];
 
         if (record.enrollmentID == enrollmentID &&
             record.studentID == currentStudentID)
         {
-
             push(undoStack, record);
-
             found = true;
-
             continue;
         }
 
-        rows.push_back(line);
+        updatedRows.push_back(fields);
     }
-
-    file.close();
 
     ofstream out("../DataBase/PendingEnrollment.csv");
 
-    for (string row : rows)
+    if (!out)
     {
-        out << row << endl;
+        cout << "Cannot open PendingEnrollment.csv" << endl;
+        return;
+    }
+
+    if (!rows.empty())
+    {
+        out << "enrollment_id,student_id,course_id" << endl;
+    }
+
+    for (const auto &row : updatedRows)
+    {
+        for (size_t i = 0; i < row.size(); ++i)
+        {
+            if (i > 0)
+            {
+                out << ",";
+            }
+            out << row[i];
+        }
+        out << endl;
     }
 
     out.close();
@@ -305,20 +302,6 @@ int main()
 
     Stack *undoStack = createStack();
 
-    cout << "\n===== Pending Enrollments =====\n"
-         << endl;
-
-    ifstream file("../DataBase/PendingEnrollment.csv");
-
-    string line;
-
-    while (getline(file, line))
-    {
-        cout << line << endl;
-    }
-
-    file.close();
-
     string currentStudentID = getActiveStudentID();
 
     if (currentStudentID == "")
@@ -351,17 +334,7 @@ int main()
         undoEnrollment(undoStack);
     }
 
-    cout << "\n===== Current Pending Enrollments =====\n"
-         << endl;
-
-    ifstream file2("../DataBase/PendingEnrollment.csv");
-
-    while (getline(file2, line))
-    {
-        cout << line << endl;
-    }
-
-    file2.close();
+    displayPendingEnrollmentsForStudent(currentStudentID, "===== Current Pending Enrollments =====");
 
     clearStack(undoStack);
 

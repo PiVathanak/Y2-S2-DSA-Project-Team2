@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <string>
+#include <cctype>
 using namespace std;
 
 #include "../LinkList/LinkedList.cpp"
@@ -51,6 +52,45 @@ public:
                 count++;
             }
             current = current->next;
+        }
+    }
+
+    void searchPartial(const string& term, void** results, int& count, int max_results) {
+        count = 0;
+        string lowerTerm = term;
+        int termLen = lowerTerm.length();
+        for (int i = 0; i < termLen; i++) lowerTerm[i] = tolower(lowerTerm[i]);
+
+        for (int i = 0; i < SIZE && count < max_results; i++) {
+            ListNode* current = table[i].head;
+            while (current != nullptr && count < max_results) {
+                HashEntry* entry = (HashEntry*)current->data;
+                string lowerKey = entry->key;
+                int keyLen = lowerKey.length();
+                for (int j = 0; j < keyLen; j++) lowerKey[j] = tolower(lowerKey[j]);
+
+                // Manual substring check: slide a window of width termLen across lowerKey
+                bool found = false;
+                if (termLen <= keyLen) {
+                    for (int j = 0; j <= keyLen - termLen && !found; j++) {
+                        bool match = true;
+                        for (int k = 0; k < termLen && match; k++) {
+                            if (lowerKey[j + k] != lowerTerm[k]) match = false;
+                        }
+                        if (match) found = true;
+                    }
+                }
+
+                if (found) {
+                    // Skip if this pointer was already added
+                    bool dup = false;
+                    for (int k = 0; k < count; k++) {
+                        if (results[k] == entry->value) { dup = true; break; }
+                    }
+                    if (!dup) results[count++] = entry->value;
+                }
+                current = current->next;
+            }
         }
     }
 

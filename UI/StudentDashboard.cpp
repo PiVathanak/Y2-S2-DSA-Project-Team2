@@ -15,7 +15,8 @@ class StudentDashboard {
 private:
     static string toLower(const string& s) {
         string res = s;
-        for (size_t i = 0; i < res.length(); ++i) {
+        int len = res.length();
+        for (int i = 0; i < len; i++) {
             res[i] = tolower(res[i]);
         }
         return res;
@@ -233,22 +234,17 @@ public:
                 cout << "\nEnter course ID or Name to search: ";
                 string term;
                 cin >> ws; getline(cin, term);
-                
-                string lowerTerm = toLower(term);
-                Course* results[100];
+
+                void* rawResults[100];
                 int count = 0;
-                ListNode* curr = courseList.head;
-                while (curr && count < 100) {
-                    Course* c = (Course*)curr->data;
-                    if (toLower(c->course_name).find(lowerTerm) != string::npos || toLower(c->course_id).find(lowerTerm) != string::npos) {
-                        results[count++] = c;
-                    }
-                    curr = curr->next;
-                }
-                
+                // Use the hash table for O(1)-bucket lookup with substring dedup
+                courseHash.searchPartial(term, rawResults, count, 100);
+
                 if (count == 0) {
                     cout << "Course not found." << endl;
                 } else {
+                    Course* results[100];
+                    for (int i = 0; i < count; i++) results[i] = (Course*)rawResults[i];
                     Sorting::mergeSortCoursesByName(results, count);
                     displayCoursesTable(results, count, "Search Results", teacherList);
                 }

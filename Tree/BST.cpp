@@ -51,6 +51,20 @@ struct BST {
             cout << "No students found." << endl;
         }
     }
+
+    // Collect students in sorted (in-order)
+    void collectInOrderRec(BSTNode* node, Student** arr, int& idx) {
+        if (node != nullptr) {
+            collectInOrderRec(node->left, arr, idx);
+            arr[idx++] = node->data;
+            collectInOrderRec(node->right, arr, idx);
+        }
+    }
+
+    void collectInOrder(Student** arr, int& count) {
+        count = 0;
+        collectInOrderRec(root, arr, count);
+    }
     
     void destroyRec(BSTNode* node) {
         if (node) {

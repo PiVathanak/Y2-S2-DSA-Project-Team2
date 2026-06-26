@@ -1,10 +1,30 @@
 #pragma once
 #include <iostream>
 #include <string>
+#include <conio.h>
 #include "../tools/Models.cpp"
 #include "../LinkList/LinkedList.cpp"
 
 using namespace std;
+
+// Reads password character-by-character, displaying '*' instead of actual chars
+static string getPassword() {
+    string password = "";
+    char ch;
+    while ((ch = _getch()) != '\r') {  // '\r' = Enter key
+        if (ch == '\b') {              // Backspace
+            if (!password.empty()) {
+                cout << "\b \b";      // erase the last '*'
+                password.pop_back();
+            }
+        } else if (ch >= 32 && ch < 127) { // printable ASCII only
+            password += ch;
+            cout << '*';
+        }
+    }
+    cout << endl;
+    return password;
+}
 
 class LoginUI {
 public:
@@ -17,7 +37,7 @@ public:
         cout << "Username: ";
         cin >> username;
         cout << "Password: ";
-        cin >> password;
+        password = getPassword();
 
         // Check Admins
         ListNode* curr = adminList.head;

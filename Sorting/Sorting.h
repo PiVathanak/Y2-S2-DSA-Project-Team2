@@ -10,4 +10,6 @@ public:
     static void mergeStudents(Student** arr, int left, int mid, int right);
     static void mergeSortStudentsRec(Student** arr, int left, int right);
     static void mergeSortStudentsByName(Student** arr, int n);
+
+    static void insertionSortStudentsByName(Student** arr, int n);
 };

@@ -7,6 +7,7 @@
 #include "../tools/CSVManager.h"
 #include "../tools/Animation.h"
 #include "../HashTable/HashTable.h"
+#include "../Sorting/Sorting.h"
 
 using namespace std;
 
@@ -174,15 +175,25 @@ static void localDisplayStudentsTable(LinkedList& studentList) {
         return;
     }
 
+    // Collect student list into an array for sorting
+    int totalCount = studentList.count;
+    Student** studentArray = new Student*[totalCount];
+    ListNode* curr = studentList.head;
+    int idx = 0;
+    while (curr) {
+        studentArray[idx++] = (Student*)curr->data;
+        curr = curr->next;
+    }
+
+    // Sort students alphabetically by name using Merge Sort!
+    Sorting::mergeSortStudentsByName(studentArray, totalCount);
+
     auto printTable = [&](const string& statusFilter, const string& title) {
         int rowCount = 0;
-        ListNode* countTemp = studentList.head;
-        while (countTemp) {
-            Student* s = (Student*)countTemp->data;
-            if (s->status == statusFilter) {
+        for (int i = 0; i < totalCount; i++) {
+            if (studentArray[i]->status == statusFilter) {
                 rowCount++;
             }
-            countTemp = countTemp->next;
         }
 
         int charDelay, lineDelay, postLineDelay;
@@ -198,9 +209,8 @@ static void localDisplayStudentsTable(LinkedList& studentList) {
         Animation::printLineDelayed("+------+----------------------+-----------------+---------------------------+----------+", lineDelay);
 
         bool found = false;
-        ListNode* temp = studentList.head;
-        while (temp) {
-            Student* s = (Student*)temp->data;
+        for (int i = 0; i < totalCount; i++) {
+            Student* s = studentArray[i];
             if (s->status == statusFilter) {
                 stringstream ss;
                 ss << "| " << left << setw(4) << s->student_id
@@ -211,7 +221,6 @@ static void localDisplayStudentsTable(LinkedList& studentList) {
                 Animation::typeWriteLine(ss.str(), charDelay, postLineDelay);
                 found = true;
             }
-            temp = temp->next;
         }
         if (!found) {
             stringstream ss;
@@ -224,6 +233,8 @@ static void localDisplayStudentsTable(LinkedList& studentList) {
     printTable("enrolled", "Enrolled");
     cout << endl;
     printTable("pending", "Pending");
+
+    delete[] studentArray;
 }
 
 static void localDisplayTeachersTable(LinkedList& teacherList) {
@@ -355,21 +366,29 @@ void adminViewStudents(LinkedList& studentList) {
         string lowerSearch = "";
         for (char c : searchName) lowerSearch += tolower(c);
         
-        void* results[100];
+        void* rawResults[100];
         int count = 0;
-        ht.search(lowerSearch, results, count, 100);
+        ht.search(lowerSearch, rawResults, count, 100);
         
         if (count > 0) {
+            Student* results[100];
+            for (int i = 0; i < count; i++) {
+                results[i] = (Student*)rawResults[i];
+            }
+            
+            // Sort search results alphabetically using Insertion Sort
+            Sorting::insertionSortStudentsByName(results, count);
+
             int charDelay, lineDelay, postLineDelay;
             Animation::getDelaysForCount(count, charDelay, lineDelay, postLineDelay);
             
-            Animation::printLineDelayed("\n--- Search Results ---", lineDelay);
+            Animation::printLineDelayed("\n--- Search Results (Sorted A-Z via Insertion Sort) ---", lineDelay);
             Animation::printLineDelayed("+------+----------------------+-----------------+---------------------------+----------+", lineDelay);
             Animation::printLineDelayed("| ID   | Name                 | Username        | Email                     | Status   |", lineDelay);
             Animation::printLineDelayed("+------+----------------------+-----------------+---------------------------+----------+", lineDelay);
             
             for (int i = 0; i < count; i++) {
-                Student* s = (Student*)results[i];
+                Student* s = results[i];
                 stringstream ss;
                 ss << "| " << left << setw(4) << s->student_id
                    << " | " << left << setw(20) << (s->name.length() > 20 ? s->name.substr(0,20) : s->name)

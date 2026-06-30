@@ -140,18 +140,26 @@ void teacherSearchStudent(LinkedList& rosterList) {
     string lowerSearch = "";
     for (char c : searchName) lowerSearch += tolower(c);
     
-    void* results[100];
+    void* rawResults[100];
     int count = 0;
-    ht.search(lowerSearch, results, count, 100);
+    ht.search(lowerSearch, rawResults, count, 100);
     
     if (count > 0) {
-        cout << "\n--- Search Results ---" << endl;
+        Student* results[100];
+        for (int i = 0; i < count; i++) {
+            results[i] = (Student*)rawResults[i];
+        }
+
+        // Sort search results alphabetically using Insertion Sort
+        Sorting::insertionSortStudentsByName(results, count);
+
+        cout << "\n--- Search Results (Sorted A-Z via Insertion Sort) ---" << endl;
         cout << "+" << string(10, '-') << "+" << string(30, '-') << "+" << string(35, '-') << "+" << endl;
         cout << "| " << left << setw(8) << "ID" << " | " << setw(28) << "Name" << " | " << setw(33) << "Email" << " |" << endl;
         cout << "+" << string(10, '-') << "+" << string(30, '-') << "+" << string(35, '-') << "+" << endl;
         
         for (int i = 0; i < count; i++) {
-            Student* s = (Student*)results[i];
+            Student* s = results[i];
             cout << "| " << left << setw(8) << s->student_id 
                  << " | " << setw(28) << s->name 
                  << " | " << setw(33) << s->email << " |" << endl;

@@ -85,3 +85,16 @@ void Sorting::mergeSortStudentsRec(Student** arr, int left, int right) {
 void Sorting::mergeSortStudentsByName(Student** arr, int n) {
     mergeSortStudentsRec(arr, 0, n - 1);
 }
+
+void Sorting::insertionSortStudentsByName(Student** arr, int n) {
+    for (int i = 1; i < n; i++) {
+        Student* key = arr[i];
+        int j = i - 1;
+        // Compare student names alphabetically
+        while (j >= 0 && arr[j]->name > key->name) {
+            arr[j + 1] = arr[j];
+            j = j - 1;
+        }
+        arr[j + 1] = key;
+    }
+}

@@ -1,12 +1,20 @@
 #pragma once
 #include <iostream>
+#include <string>
+#include <thread>
+#include <chrono>
+#include <cstdlib>
 #include "AdminDashboard.h"
+#include "../LinkList/LinkedList.h"
 
 using namespace std;
 
 void AdminDashboard::render(LinkedList& studentList, Queue& pendingQueue, LinkedList& enrollList,
                             LinkedList& courseList, LinkedList& teacherList) {
     while (true) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(250));
+        system("cls");
+
         cout << "\n--- Admin Menu ---" << endl;
         cout << "1. Add student" << endl;
         cout << "2. Update student" << endl;
@@ -16,12 +24,14 @@ void AdminDashboard::render(LinkedList& studentList, Queue& pendingQueue, Linked
         cout << "6. Add course" << endl;
         cout << "0. Logout" << endl;
         cout << "Select: ";
+        
         int choice;
         if (!(cin >> choice)) {
             cin.clear();
             cin.ignore(10000, '\n');
             continue;
         }
+        cin.ignore(10000, '\n');
 
         if (choice == 0) break;
 
@@ -48,5 +58,9 @@ void AdminDashboard::render(LinkedList& studentList, Queue& pendingQueue, Linked
                 cout << "Invalid choice! Please choose again." << endl;
                 break;
         }
+
+        cout << "\nPress Enter to continue...";
+        string temp;
+        getline(cin, temp);
     }
 }

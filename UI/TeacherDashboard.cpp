@@ -1,6 +1,9 @@
 #pragma once
 #include <iostream>
 #include <string>
+#include <thread>
+#include <chrono>
+#include <cstdlib>
 #include "TeacherDashboard.h"
 #include "../Tree/BST.h"
 #include "../HashTable/HashTable.h"
@@ -24,20 +27,24 @@ void TeacherDashboard::render(string userId, LinkedList& teacherList, LinkedList
         return;
     }
 
-    cout << "\nWelcome, " << myTeacher->name << "!" << endl;
-
     while (true) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(250));
+        system("cls");
+
+        cout << "\nWelcome, " << myTeacher->name << "!" << endl;
         cout << "\n--- Teacher Menu ---" << endl;
         cout << "1. View the students enrolled in my course" << endl;
         cout << "2. Search for a student" << endl;
         cout << "0. Logout" << endl;
         cout << "Select: ";
+        
         int choice;
         if (!(cin >> choice)) {
             cin.clear();
             cin.ignore(10000, '\n');
             continue;
         }
+        cin.ignore(10000, '\n');
 
         if (choice == 0) break;
 
@@ -56,5 +63,9 @@ void TeacherDashboard::render(string userId, LinkedList& teacherList, LinkedList
         } else {
             cout << "Invalid choice! Please choose again." << endl;
         }
+
+        cout << "\nPress Enter to continue...";
+        string temp;
+        getline(cin, temp);
     }
 }

@@ -1,6 +1,9 @@
 #pragma once
 #include <iostream>
 #include <string>
+#include <thread>
+#include <chrono>
+#include <cstdlib>
 #include "StudentDashboard.h"
 #include "../HashTable/HashTable.h"
 #include "../Stack/Stack.h"
@@ -18,18 +21,23 @@ void StudentDashboard::render(string userId, LinkedList& courseList, Queue& pend
     }
 
     while (true) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(250));
+        system("cls");
+
         cout << "\n--- Student Menu ---" << endl;
         cout << "1. View available courses" << endl;
         cout << "2. View my enrolled courses" << endl;
         cout << "3. Search for a course" << endl;
         cout << "0. Logout" << endl;
         cout << "Select: ";
+        
         int choice;
         if (!(cin >> choice)) {
             cin.clear();
             cin.ignore(10000, '\n');
             continue;
         }
+        cin.ignore(10000, '\n');
 
         if (choice == 0) break;
 
@@ -47,5 +55,9 @@ void StudentDashboard::render(string userId, LinkedList& courseList, Queue& pend
                 cout << "Invalid choice! Please choose again." << endl;
                 break;
         }
+
+        cout << "\nPress Enter to continue...";
+        string temp;
+        getline(cin, temp);
     }
 }

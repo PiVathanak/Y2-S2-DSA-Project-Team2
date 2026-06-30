@@ -14,7 +14,7 @@ struct BST {
     BST();
     BSTNode* insertRec(BSTNode* node, Student* data);
     void insert(Student* data);
-    void inOrderRec(BSTNode* node, int& index);
+    void inOrderRec(BSTNode* node, int& index, int charDelay = 1, int postLineDelay = 15);
     void displaySorted();
     void collectInOrderRec(BSTNode* node, Student** arr, int& idx);
     void collectInOrder(Student** arr, int& count);

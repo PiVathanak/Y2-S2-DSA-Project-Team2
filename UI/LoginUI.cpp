@@ -35,6 +35,7 @@ bool LoginUI::login(LinkedList& adminList, LinkedList& studentList, LinkedList& 
     string username, password;
     cout << "Username: ";
     cin >> username;
+    cin.ignore(10000, '\n');
     cout << "Password: ";
     password = getPassword();
 

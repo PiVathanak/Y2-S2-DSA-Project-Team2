@@ -57,4 +57,12 @@ void RegisterUI::render(LinkedList& studentList) {
     
     cout << "Registration successful! Your ID is " << newId << endl;
     cout << "You can now Login to the Account" << endl;
+
+    // Discard the leftover newline in cin from previous prompts
+    cin.clear();
+    cin.ignore(10000, '\n');
+
+    cout << "\nPress Enter to go to login page...";
+    string temp;
+    getline(cin, temp);
 }

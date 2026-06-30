@@ -55,6 +55,7 @@ void studentEnrollCourse(string userId, LinkedList& courseList, Queue& pendingQu
         cout << "\nEnter Course ID to enroll (or '0' to back): ";
         string cid;
         cin >> cid;
+        cin.ignore(10000, '\n');
         if (cid == "0") break;
 
         bool isValidCourse = false;
@@ -162,6 +163,7 @@ void studentViewAndUndoEnrollments(string userId, LinkedList& courseList, Queue&
             cout << "\nDo you want to undo your last pending enrollment? (Y/N): ";
             string ans;
             cin >> ans;
+            cin.ignore(10000, '\n');
             if (ans == "Y" || ans == "y") {
                 PendingEnrollment* pe = (PendingEnrollment*)sessionStack.peek();
                 

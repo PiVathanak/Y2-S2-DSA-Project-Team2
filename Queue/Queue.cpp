@@ -2,8 +2,10 @@
 #include <iostream>
 #include <iomanip>
 #include <string>
+#include <sstream>
 #include "Queue.h"
 #include "../tools/CSVManager.h"
+#include "../tools/Animation.h"
 
 using namespace std;
 
@@ -36,10 +38,13 @@ void Queue::clear() {
 }
 
 static void displayPendingEnrollmentsTable(Queue& pendingQueue, LinkedList& studentList, LinkedList& courseList) {
-    cout << "=== Pending Enrollments ===" << endl;
-    cout << "+-------+--------------------------------+------+----------------------+-----------------+---------------------------+----------+" << endl;
-    cout << "| C.ID  | Course Name                    | S.ID | Name                 | Username        | Email                     | Status   |" << endl;
-    cout << "+-------+--------------------------------+------+----------------------+-----------------+---------------------------+----------+" << endl;
+    int charDelay, lineDelay, postLineDelay;
+    Animation::getDelaysForCount(pendingQueue.size(), charDelay, lineDelay, postLineDelay);
+
+    Animation::printLineDelayed("=== Pending Enrollments ===", lineDelay);
+    Animation::printLineDelayed("+-------+--------------------------------+------+----------------------+-----------------+---------------------------+----------+", lineDelay);
+    Animation::printLineDelayed("| C.ID  | Course Name                    | S.ID | Name                 | Username        | Email                     | Status   |", lineDelay);
+    Animation::printLineDelayed("+-------+--------------------------------+------+----------------------+-----------------+---------------------------+----------+", lineDelay);
 
     ListNode* temp = pendingQueue.getFront();
     while (temp) {
@@ -54,17 +59,20 @@ static void displayPendingEnrollmentsTable(Queue& pendingQueue, LinkedList& stud
         string studentStatus   = s ? s->status : "Unknown";
         string courseName      = c ? c->course_name : "Unknown";
 
-        cout << "| " << left << setw(5) << pe->course_id
+        stringstream ss;
+        ss << "| " << left << setw(5) << pe->course_id
              << " | " << left << setw(30) << (courseName.length() > 30 ? courseName.substr(0,30) : courseName)
              << " | " << left << setw(4) << pe->student_id
              << " | " << left << setw(20) << (studentName.length() > 20 ? studentName.substr(0,20) : studentName)
              << " | " << left << setw(15) << (studentUsername.length() > 15 ? studentUsername.substr(0,15) : studentUsername)
              << " | " << left << setw(25) << (studentEmail.length() > 25 ? studentEmail.substr(0,25) : studentEmail)
-             << " | " << left << setw(8) << (studentStatus.length() > 8 ? studentStatus.substr(0,8) : studentStatus) << " |" << endl;
+             << " | " << left << setw(8) << (studentStatus.length() > 8 ? studentStatus.substr(0,8) : studentStatus) << " |";
+        
+        Animation::typeWriteLine(ss.str(), charDelay, postLineDelay);
         
         temp = temp->next;
     }
-    cout << "+-------+--------------------------------+------+----------------------+-----------------+---------------------------+----------+" << endl;
+    Animation::printLineDelayed("+-------+--------------------------------+------+----------------------+-----------------+---------------------------+----------+", lineDelay);
 }
 
 void adminHandlePendingEnrollments(Queue& pendingQueue, LinkedList& studentList, LinkedList& enrollList, LinkedList& courseList) {
@@ -78,6 +86,7 @@ void adminHandlePendingEnrollments(Queue& pendingQueue, LinkedList& studentList,
         cout << "do you want to accept(1) or reject (0) or go back(9)? ";
         int action;
         cin >> action;
+        cin.ignore(10000, '\n');
 
         if (action == 1 || action == 0) {
             ListNode* frontNode = pendingQueue.getFront();

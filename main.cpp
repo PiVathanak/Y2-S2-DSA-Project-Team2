@@ -1,9 +1,13 @@
 #include <iostream>
 #include <string>
+#include <thread>
+#include <chrono>
+#include <cstdlib>
 
 // Include everything in dependency order
 // Headers
 #include "tools/Models.cpp"
+#include "tools/Animation.h"
 #include "LinkList/LinkedList.h"
 #include "Queue/Queue.h"
 #include "Stack/Stack.h"
@@ -57,6 +61,9 @@ int main() {
     cout << "Data loaded." << endl;
 
     while(true) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(250));
+        system("cls");
+
         cout << "\n== Welcome ==" << endl;
         cout << "1. Login" << endl;
         cout << "2. Register (for new student)" << endl;
@@ -69,6 +76,7 @@ int main() {
             cin.ignore(10000, '\n');
             continue;
         }
+        cin.ignore(10000, '\n');
 
         if (choice == 0) break;
 
@@ -93,6 +101,10 @@ int main() {
                     }
                     StudentDashboard::render(userId, courseList, pendingQueue, sessionStack, enrollList, teacherList);
                 }
+            } else {
+                cout << "\nPress Enter to continue...";
+                string temp;
+                getline(cin, temp);
             }
         } else if (choice == 2) {
             RegisterUI::render(studentList);

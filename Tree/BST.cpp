@@ -2,7 +2,9 @@
 #include <iostream>
 #include <iomanip>
 #include <string>
+#include <sstream>
 #include "BST.h"
+#include "../tools/Animation.h"
 
 using namespace std;
 
@@ -27,20 +29,31 @@ void BST::insert(Student* data) {
     root = insertRec(root, data);
 }
 
-void BST::inOrderRec(BSTNode* node, int& index) {
+static int localCountNodes(BSTNode* node) {
+    if (node == nullptr) return 0;
+    return 1 + localCountNodes(node->left) + localCountNodes(node->right);
+}
+
+void BST::inOrderRec(BSTNode* node, int& index, int charDelay, int postLineDelay) {
     if (node != nullptr) {
-        inOrderRec(node->left, index);
-        cout << index << ". " << node->data->name << " (ID: " << node->data->student_id << ", Email: " << node->data->email << ")" << endl;
+        inOrderRec(node->left, index, charDelay, postLineDelay);
+        stringstream ss;
+        ss << index << ". " << node->data->name << " (ID: " << node->data->student_id << ", Email: " << node->data->email << ")";
+        Animation::typeWriteLine(ss.str(), charDelay, postLineDelay);
         index++;
-        inOrderRec(node->right, index);
+        inOrderRec(node->right, index, charDelay, postLineDelay);
     }
 }
 
 void BST::displaySorted() {
     int index = 1;
-    inOrderRec(root, index);
+    int nodeCount = localCountNodes(root);
+    int charDelay, lineDelay, postLineDelay;
+    Animation::getDelaysForCount(nodeCount, charDelay, lineDelay, postLineDelay);
+
+    inOrderRec(root, index, charDelay, postLineDelay);
     if (index == 1) {
-        cout << "No students found." << endl;
+        Animation::printLineDelayed("No students found.", lineDelay);
     }
 }
 

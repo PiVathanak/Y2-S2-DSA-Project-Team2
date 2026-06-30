@@ -2,8 +2,10 @@
 #include <iostream>
 #include <iomanip>
 #include <string>
+#include <sstream>
 #include "LinkedList.h"
 #include "../tools/CSVManager.h"
+#include "../tools/Animation.h"
 
 using namespace std;
 
@@ -172,29 +174,50 @@ static void localDisplayStudentsTable(LinkedList& studentList) {
     }
 
     auto printTable = [&](const string& statusFilter, const string& title) {
-        cout << "=== " << title << " ===" << endl;
-        cout << "+------+----------------------+-----------------+---------------------------+----------+" << endl;
-        cout << "| ID   | Name                 | Username        | Email                     | Status   |" << endl;
-        cout << "+------+----------------------+-----------------+---------------------------+----------+" << endl;
+        int rowCount = 0;
+        ListNode* countTemp = studentList.head;
+        while (countTemp) {
+            Student* s = (Student*)countTemp->data;
+            if (s->status == statusFilter) {
+                rowCount++;
+            }
+            countTemp = countTemp->next;
+        }
+
+        int charDelay, lineDelay, postLineDelay;
+        Animation::getDelaysForCount(rowCount, charDelay, lineDelay, postLineDelay);
+
+        {
+            stringstream ss;
+            ss << "=== " << title << " ===";
+            Animation::printLineDelayed(ss.str(), lineDelay);
+        }
+        Animation::printLineDelayed("+------+----------------------+-----------------+---------------------------+----------+", lineDelay);
+        Animation::printLineDelayed("| ID   | Name                 | Username        | Email                     | Status   |", lineDelay);
+        Animation::printLineDelayed("+------+----------------------+-----------------+---------------------------+----------+", lineDelay);
 
         bool found = false;
         ListNode* temp = studentList.head;
         while (temp) {
             Student* s = (Student*)temp->data;
             if (s->status == statusFilter) {
-                cout << "| " << left << setw(4) << s->student_id
+                stringstream ss;
+                ss << "| " << left << setw(4) << s->student_id
                      << " | " << left << setw(20) << (s->name.length() > 20 ? s->name.substr(0,20) : s->name)
                      << " | " << left << setw(15) << (s->username.length() > 15 ? s->username.substr(0,15) : s->username)
                      << " | " << left << setw(25) << (s->email.length() > 25 ? s->email.substr(0,25) : s->email)
-                     << " | " << left << setw(8) << (s->status.length() > 8 ? s->status.substr(0,8) : s->status) << " |" << endl;
+                     << " | " << left << setw(8) << (s->status.length() > 8 ? s->status.substr(0,8) : s->status) << " |";
+                Animation::typeWriteLine(ss.str(), charDelay, postLineDelay);
                 found = true;
             }
             temp = temp->next;
         }
         if (!found) {
-            cout << "| " << left << setw(84) << "No students in this category." << " |" << endl;
+            stringstream ss;
+            ss << "| " << left << setw(84) << "No students in this category." << " |";
+            Animation::typeWriteLine(ss.str(), charDelay, postLineDelay);
         }
-        cout << "+------+----------------------+-----------------+---------------------------+----------+" << endl;
+        Animation::printLineDelayed("+------+----------------------+-----------------+---------------------------+----------+", lineDelay);
     };
 
     printTable("enrolled", "Enrolled");
@@ -208,20 +231,25 @@ static void localDisplayTeachersTable(LinkedList& teacherList) {
         return;
     }
 
-    cout << "=== Teachers ===" << endl;
-    cout << "+------+----------------------+-----------+" << endl;
-    cout << "| ID   | Name                 | Course ID |" << endl;
-    cout << "+------+----------------------+-----------+" << endl;
+    int charDelay, lineDelay, postLineDelay;
+    Animation::getDelaysForCount(teacherList.count, charDelay, lineDelay, postLineDelay);
+
+    Animation::printLineDelayed("=== Teachers ===", lineDelay);
+    Animation::printLineDelayed("+------+----------------------+-----------+", lineDelay);
+    Animation::printLineDelayed("| ID   | Name                 | Course ID |", lineDelay);
+    Animation::printLineDelayed("+------+----------------------+-----------+", lineDelay);
 
     ListNode* temp = teacherList.head;
     while (temp) {
         Teacher* t = (Teacher*)temp->data;
-        cout << "| " << left << setw(4) << t->teacher_id
+        stringstream ss;
+        ss << "| " << left << setw(4) << t->teacher_id
              << " | " << left << setw(20) << (t->name.length() > 20 ? t->name.substr(0,20) : t->name)
-             << " | " << left << setw(9) << t->course_id << " |" << endl;
+             << " | " << left << setw(9) << t->course_id << " |";
+        Animation::typeWriteLine(ss.str(), charDelay, postLineDelay);
         temp = temp->next;
     }
-    cout << "+------+----------------------+-----------+" << endl;
+    Animation::printLineDelayed("+------+----------------------+-----------+", lineDelay);
 }
 
 // Admin / Dashboard Helpers
@@ -232,6 +260,7 @@ void adminAddStudent(LinkedList& studentList) {
     cout << "Username: "; cin >> username;
     cout << "Email: "; cin >> email;
     cout << "Password: "; cin >> password;
+    cin.ignore(10000, '\n');
 
     int newIdNum = studentList.count + 1;
     string newId = "S";
@@ -243,6 +272,8 @@ void adminAddStudent(LinkedList& studentList) {
     studentList.append(s);
     CSVManager::saveStudents(studentList);
     cout << "Student added with ID " << newId << "." << endl;
+    cout << "\nUpdated student list:" << endl;
+    localDisplayStudentsTable(studentList);
 }
 
 void adminUpdateStudent(LinkedList& studentList) {
@@ -275,6 +306,8 @@ void adminUpdateStudent(LinkedList& studentList) {
         if (!input.empty()) updateNode(studentList, idToUpdate, "Student", "password", input);
 
         CSVManager::saveStudents(studentList);
+        cout << "\nUpdated student list:" << endl;
+        localDisplayStudentsTable(studentList);
     }
 }
 
@@ -283,8 +316,11 @@ void adminDeleteStudent(LinkedList& studentList) {
     string idToDelete;
     cout << "Student ID to delete: ";
     cin >> idToDelete;
+    cin.ignore(10000, '\n');
     deleteNode(studentList, idToDelete, "Student");
     CSVManager::saveStudents(studentList);
+    cout << "\nUpdated student list:" << endl;
+    localDisplayStudentsTable(studentList);
 }
 
 void adminViewStudents(LinkedList& studentList) {
@@ -305,6 +341,7 @@ void adminAddCourse(LinkedList& courseList, LinkedList& teacherList) {
         string courseName, credits;
         cout << "Course Name: "; cin >> ws; getline(cin, courseName);
         cout << "Credits: "; cin >> credits;
+        cin.ignore(10000, '\n');
 
         int newIdNum = courseList.count + 1;
         string newId = "C";
@@ -422,12 +459,21 @@ void getTeacherRoster(const string& courseId, LinkedList& enrollList, LinkedList
 }
 
 void displayCoursesTable(Course** arr, int count, string title, LinkedList& teacherList) {
-    cout << "=== " << title << " ===" << endl;
-    cout << "+-------+--------------------------------+----------------------+---------+" << endl;
-    cout << "| C.ID  | Course Name                    | Teacher Name         | Credits |" << endl;
-    cout << "+-------+--------------------------------+----------------------+---------+" << endl;
+    int charDelay, lineDelay, postLineDelay;
+    Animation::getDelaysForCount(count, charDelay, lineDelay, postLineDelay);
+
+    {
+        stringstream ss;
+        ss << "=== " << title << " ===";
+        Animation::printLineDelayed(ss.str(), lineDelay);
+    }
+    Animation::printLineDelayed("+-------+--------------------------------+----------------------+---------+", lineDelay);
+    Animation::printLineDelayed("| C.ID  | Course Name                    | Teacher Name         | Credits |", lineDelay);
+    Animation::printLineDelayed("+-------+--------------------------------+----------------------+---------+", lineDelay);
     if (count == 0) {
-        cout << "| " << left << setw(70) << "No courses found." << " |" << endl;
+        stringstream ss;
+        ss << "| " << left << setw(70) << "No courses found." << " |";
+        Animation::typeWriteLine(ss.str(), charDelay, postLineDelay);
     }
     for (int i = 0; i < count; i++) {
         Course* c = arr[i];
@@ -443,12 +489,14 @@ void displayCoursesTable(Course** arr, int count, string title, LinkedList& teac
             tNode = tNode->next;
         }
         
-        cout << "| " << left << setw(5) << c->course_id
+        stringstream ss;
+        ss << "| " << left << setw(5) << c->course_id
              << " | " << left << setw(30) << (c->course_name.length() > 30 ? c->course_name.substr(0,30) : c->course_name)
              << " | " << left << setw(20) << (teacherName.length() > 20 ? teacherName.substr(0,20) : teacherName)
-             << " | " << left << setw(7) << c->credits << " |" << endl;
+             << " | " << left << setw(7) << c->credits << " |";
+        Animation::typeWriteLine(ss.str(), charDelay, postLineDelay);
     }
-    cout << "+-------+--------------------------------+----------------------+---------+" << endl;
+    Animation::printLineDelayed("+-------+--------------------------------+----------------------+---------+", lineDelay);
 }
 
 

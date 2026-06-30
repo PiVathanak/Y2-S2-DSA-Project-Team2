@@ -6,6 +6,7 @@
 #include "LinkedList.h"
 #include "../tools/CSVManager.h"
 #include "../tools/Animation.h"
+#include "../HashTable/HashTable.h"
 
 using namespace std;
 
@@ -325,6 +326,63 @@ void adminDeleteStudent(LinkedList& studentList) {
 
 void adminViewStudents(LinkedList& studentList) {
     localDisplayStudentsTable(studentList);
+    
+    while (true) {
+        cout << "\nSearch for student name [0 to go back]: ";
+        string searchName;
+        cin >> ws;
+        getline(cin, searchName);
+        
+        if (searchName == "0") {
+            break;
+        }
+        
+        HashTable ht;
+        ListNode* currNode = studentList.head;
+        while (currNode) {
+            Student* s = (Student*)currNode->data;
+            string lowerName = "";
+            for (char c : s->name) lowerName += tolower(c);
+            
+            string prefix = "";
+            for (char c : lowerName) {
+                prefix += c;
+                ht.insert(prefix, s);
+            }
+            currNode = currNode->next;
+        }
+
+        string lowerSearch = "";
+        for (char c : searchName) lowerSearch += tolower(c);
+        
+        void* results[100];
+        int count = 0;
+        ht.search(lowerSearch, results, count, 100);
+        
+        if (count > 0) {
+            int charDelay, lineDelay, postLineDelay;
+            Animation::getDelaysForCount(count, charDelay, lineDelay, postLineDelay);
+            
+            Animation::printLineDelayed("\n--- Search Results ---", lineDelay);
+            Animation::printLineDelayed("+------+----------------------+-----------------+---------------------------+----------+", lineDelay);
+            Animation::printLineDelayed("| ID   | Name                 | Username        | Email                     | Status   |", lineDelay);
+            Animation::printLineDelayed("+------+----------------------+-----------------+---------------------------+----------+", lineDelay);
+            
+            for (int i = 0; i < count; i++) {
+                Student* s = (Student*)results[i];
+                stringstream ss;
+                ss << "| " << left << setw(4) << s->student_id
+                   << " | " << left << setw(20) << (s->name.length() > 20 ? s->name.substr(0,20) : s->name)
+                   << " | " << left << setw(15) << (s->username.length() > 15 ? s->username.substr(0,15) : s->username)
+                   << " | " << left << setw(25) << (s->email.length() > 25 ? s->email.substr(0,25) : s->email)
+                   << " | " << left << setw(8) << (s->status.length() > 8 ? s->status.substr(0,8) : s->status) << " |";
+                Animation::typeWriteLine(ss.str(), charDelay, postLineDelay);
+            }
+            Animation::printLineDelayed("+------+----------------------+-----------------+---------------------------+----------+", lineDelay);
+        } else {
+            cout << "Student not found." << endl;
+        }
+    }
 }
 
 void adminAddCourse(LinkedList& courseList, LinkedList& teacherList) {

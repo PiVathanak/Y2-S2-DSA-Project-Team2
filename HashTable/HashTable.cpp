@@ -9,17 +9,20 @@
 
 using namespace std;
 
+// constructor for HashEntry
 HashEntry::HashEntry(string k, void* v) {
     key = k;
     value = v;
 }
 
+// insert key-value pair into hash table
 void HashTable::insert(const string& key, void* value) {
     int index = hashFunction(key);
     HashEntry* entry = new HashEntry(key, value);
     table[index].append(entry);
 }
 
+// hash function to convert key to index
 int HashTable::hashFunction(const string& key) {
     int hash = 0;
     for (char c : key) {
@@ -28,10 +31,13 @@ int HashTable::hashFunction(const string& key) {
     return hash;
 }
 
+// search for exact key (example Alice you would search: a.. not l..)
 void HashTable::search(const string& key, void** results, int& count, int max_results) {
     count = 0;
     int index = hashFunction(key);
+    // Get first node from linked list
     ListNode* current = table[index].head;
+    // check if key exist
     while (current != nullptr && count < max_results) {
         HashEntry* entry = (HashEntry*)current->data;
         if (entry->key == key) {
@@ -42,20 +48,23 @@ void HashTable::search(const string& key, void** results, int& count, int max_re
     }
 }
 
+// search for partial key (example Alice you could search: li)
 void HashTable::searchPartial(const string& term, void** results, int& count, int max_results) {
     count = 0;
+    // Convert search term to lowercase
     string lowerTerm = term;
     int termLen = lowerTerm.length();
     for (int i = 0; i < termLen; i++) lowerTerm[i] = tolower(lowerTerm[i]);
-
+    // search in all linked list
     for (int i = 0; i < SIZE && count < max_results; i++) {
         ListNode* current = table[i].head;
+        // check if key exist
         while (current != nullptr && count < max_results) {
             HashEntry* entry = (HashEntry*)current->data;
             string lowerKey = entry->key;
             int keyLen = lowerKey.length();
             for (int j = 0; j < keyLen; j++) lowerKey[j] = tolower(lowerKey[j]);
-
+            // Check if term is substring of key
             bool found = false;
             if (termLen <= keyLen) {
                 for (int j = 0; j <= keyLen - termLen && !found; j++) {

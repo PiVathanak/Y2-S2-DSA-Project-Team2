@@ -7,6 +7,8 @@ using namespace std;
 struct HashEntry {
     string key;
     void* value;
+    // constructor
+    // void* v could be a pointer to a Course or a pointer to a Student
     HashEntry(string k, void* v);
 };
 
@@ -25,6 +27,6 @@ public:
     ~HashTable();
 };
 
-// Course / student search handlers
+// handle searching Course / students
 void studentSearchCourse(HashTable& courseHash, LinkedList& teacherList);
 void teacherSearchStudent(LinkedList& rosterList);

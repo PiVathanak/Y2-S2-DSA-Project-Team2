@@ -7,16 +7,16 @@
 #include "../tools/Animation.h"
 
 using namespace std;
-
+// constructor
 BST::BST() {
     root = nullptr;
 }
-
+// recursive helper function to insert student into BST
 BSTNode* BST::insertRec(BSTNode* node, Student* data) {
     if (node == nullptr) {
         return new BSTNode{data, nullptr, nullptr};
     }
-    
+    // ASCII comparison i.e. A < B (A left B right)
     if (data->name < node->data->name) {
         node->left = insertRec(node->left, data);
     } else {
@@ -25,51 +25,27 @@ BSTNode* BST::insertRec(BSTNode* node, Student* data) {
     return node;
 }
 
+// insert student into BST
 void BST::insert(Student* data) {
     root = insertRec(root, data);
 }
-
-static int localCountNodes(BSTNode* node) {
-    if (node == nullptr) return 0;
-    return 1 + localCountNodes(node->left) + localCountNodes(node->right);
-}
-
-void BST::inOrderRec(BSTNode* node, int& index, int charDelay, int postLineDelay) {
-    if (node != nullptr) {
-        inOrderRec(node->left, index, charDelay, postLineDelay);
-        stringstream ss;
-        ss << index << ". " << node->data->name << " (ID: " << node->data->student_id << ", Email: " << node->data->email << ")";
-        Animation::typeWriteLine(ss.str(), charDelay, postLineDelay);
-        index++;
-        inOrderRec(node->right, index, charDelay, postLineDelay);
-    }
-}
-
-void BST::displaySorted() {
-    int index = 1;
-    int nodeCount = localCountNodes(root);
-    int charDelay, lineDelay, postLineDelay;
-    Animation::getDelaysForCount(nodeCount, charDelay, lineDelay, postLineDelay);
-
-    inOrderRec(root, index, charDelay, postLineDelay);
-    if (index == 1) {
-        Animation::printLineDelayed("No students found.", lineDelay);
-    }
-}
-
+// recursive helper function to collect student in order
 void BST::collectInOrderRec(BSTNode* node, Student** arr, int& idx) {
     if (node != nullptr) {
+        // left
         collectInOrderRec(node->left, arr, idx);
+        // root
         arr[idx++] = node->data;
+        // right
         collectInOrderRec(node->right, arr, idx);
     }
 }
-
+// collect student in order
 void BST::collectInOrder(Student** arr, int& count) {
     count = 0;
     collectInOrderRec(root, arr, count);
 }
-
+// recursive helper function to destroy BST
 void BST::destroyRec(BSTNode* node) {
     if (node) {
         destroyRec(node->left);
@@ -77,7 +53,7 @@ void BST::destroyRec(BSTNode* node) {
         delete node;
     }
 }
-
+// destructor
 BST::~BST() {
     destroyRec(root);
 }

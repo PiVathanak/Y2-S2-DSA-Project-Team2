@@ -1,12 +1,11 @@
-teacher_id,name,course_id
-T001,Dr. Sarah Adams,
-T002,Prof. Mark Davis,
-T003,Dr. Linda Evans,
-T004,Prof. John Foster
-T005,Dr. Mona Garcia,
-T006,Prof. Nathan Hill,
-T007,Dr. Olivia Irwin,
-T008,Prof. Paul Jenkins,
-T009,Dr. Quinn Kelly,
-T010,Prof. Rachel Lewis,
- 
+teacher_id,name,course_id,username,password
+T001,Dr. Sarah Adams,C001,sarah,123
+T002,Prof. Mark Davis,C002,mark,123
+T003,Dr. Linda Evans,C003,linda,123
+T004,Prof. John Foster,C004,john,123
+T005,Dr. Mona Garcia,C005,mona,123
+T006,Prof. Nathan Hill,C006,nathan,123
+T007,Dr. Olivia Irwin,C007,olivia,123
+T008,Prof. Paul Jenkins,C008,paul,123
+T009,Dr. Quinn Kelly,C009,quinn,123
+T010,Prof. Rachel Lewis,C010,rachel,123

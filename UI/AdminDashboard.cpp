@@ -1,334 +1,269 @@
+#pragma once
 #include <iostream>
-#include <limits>
-#include "../tools/CSVReader.h"
+#include <iomanip>
+#include "../tools/Models.cpp"
 #include "../LinkList/CRUD.cpp"
 
 using namespace std;
 
-class AdminDashboard
-{
+class AdminDashboard {
 private:
-    dataList *studentList;
-    dataList *teacherList;
-    dataList *courseList;
-    dataList *studentTempList;
-    dataList *teacherTempList;
-    dataList *courseTempList;
-
-    void loadAllData()
-    {
-        studentList = createDataList();
-        teacherList = createDataList();
-        courseList = createDataList();
-        studentTempList = createDataList();
-        teacherTempList = createDataList();
-        courseTempList = createDataList();
-
-        vector<Student> students = CSVReader::readStudents("DataBase/Students.csv");
-        for (Student &s : students)
-        {
-            Student *copy = new Student(s);
-            addDataNode(studentList, copy, "Student");
+    // NOTE: alphabetical sorting was dropped here since the Linklist file
+    // doesn't expose a sort function. Say the word if you want one added
+    // to LinkedList.cpp and I'll wire it back in.
+    static void displayStudentsTable(dataList* studentDB) {
+        if (studentDB->n == 0) {
+            cout << "No students found." << endl;
+            return;
         }
 
-        vector<Teacher> teachers = CSVReader::readTeachers("DataBase/Teachers.csv");
-        for (Teacher &t : teachers)
-        {
-            Teacher *copy = new Teacher(t);
-            addDataNode(teacherList, copy, "Teacher");
+        auto printTable = [&](const string& statusFilter, const string& title) {
+            cout << "=== " << title << " ===" << endl;
+            cout << "+------+----------------------+-----------------+---------------------------+----------+" << endl;
+            cout << "| ID   | Name                 | Username        | Email                     | Status   |" << endl;
+            cout << "+------+----------------------+-----------------+---------------------------+----------+" << endl;
+
+            bool found = false;
+            DataNode* temp = studentDB->head;
+            while (temp) {
+                if (temp->dataType == "Student") {
+                    Student* s = (Student*)temp->data;
+                    if (s->status == statusFilter) {
+                        cout << "| " << left << setw(4) << s->student_id
+                             << " | " << left << setw(20) << (s->name.length() > 20 ? s->name.substr(0,20) : s->name)
+                             << " | " << left << setw(15) << (s->username.length() > 15 ? s->username.substr(0,15) : s->username)
+                             << " | " << left << setw(25) << (s->email.length() > 25 ? s->email.substr(0,25) : s->email)
+                             << " | " << left << setw(8) << (s->status.length() > 8 ? s->status.substr(0,8) : s->status) << " |" << endl;
+                        found = true;
+                    }
+                }
+                temp = temp->next;
+            }
+            if (!found) {
+                cout << "| " << left << setw(84) << "No students in this category." << " |" << endl;
+            }
+            cout << "+------+----------------------+-----------------+---------------------------+----------+" << endl;
+        };
+
+        printTable("enrolled", "Enrolled");
+        cout << endl;
+        printTable("pending", "Pending");
+    }
+
+    static void displayPendingEnrollmentsTable(dataList* pendingDB, dataList* studentDB, dataList* courseDB) {
+        cout << "=== Pending Enrollments ===" << endl;
+        cout << "+-------+--------------------------------+------+----------------------+-----------------+---------------------------+----------+" << endl;
+        cout << "| C.ID  | Course Name                    | S.ID | Name                 | Username        | Email                     | Status   |" << endl;
+        cout << "+-------+--------------------------------+------+----------------------+-----------------+---------------------------+----------+" << endl;
+
+        DataNode* temp = pendingDB->head;
+        while (temp) {
+            if (temp->dataType == "PendingEnrollment") {
+                PendingEnrollment* pe = (PendingEnrollment*)temp->data;
+
+                Student* s = (Student*)findData(studentDB, pe->student_id, "Student");
+                Course* c = (Course*)findData(courseDB, pe->course_id, "Course");
+
+                string studentName     = s ? s->name : "Unknown";
+                string studentUsername = s ? s->username : "Unknown";
+                string studentEmail    = s ? s->email : "Unknown";
+                string studentStatus   = s ? s->status : "Unknown";
+                string courseName      = c ? c->course_name : "Unknown";
+
+                cout << "| " << left << setw(5) << pe->course_id
+                     << " | " << left << setw(30) << (courseName.length() > 30 ? courseName.substr(0,30) : courseName)
+                     << " | " << left << setw(4) << pe->student_id
+                     << " | " << left << setw(20) << (studentName.length() > 20 ? studentName.substr(0,20) : studentName)
+                     << " | " << left << setw(15) << (studentUsername.length() > 15 ? studentUsername.substr(0,15) : studentUsername)
+                     << " | " << left << setw(25) << (studentEmail.length() > 25 ? studentEmail.substr(0,25) : studentEmail)
+                     << " | " << left << setw(8) << (studentStatus.length() > 8 ? studentStatus.substr(0,8) : studentStatus) << " |" << endl;
+            }
+            temp = temp->next;
+        }
+        cout << "+-------+--------------------------------+------+----------------------+-----------------+---------------------------+----------+" << endl;
+    }
+
+    static void displayTeachersTable(dataList* teacherDB) {
+        if (teacherDB->n == 0) {
+            cout << "No teachers found." << endl;
+            return;
         }
 
-        vector<Course> courses = CSVReader::readCourses("DataBase/Courses.csv");
-        for (Course &c : courses)
-        {
-            Course *copy = new Course(c);
-            addDataNode(courseList, copy, "Course");
+        cout << "=== Teachers ===" << endl;
+        cout << "+------+----------------------+-----------+" << endl;
+        cout << "| ID   | Name                 | Course ID |" << endl;
+        cout << "+------+----------------------+-----------+" << endl;
+
+        DataNode* temp = teacherDB->head;
+        while (temp) {
+            if (temp->dataType == "Teacher") {
+                Teacher* t = (Teacher*)temp->data;
+                cout << "| " << left << setw(4) << t->teacher_id
+                     << " | " << left << setw(20) << (t->name.length() > 20 ? t->name.substr(0,20) : t->name)
+                     << " | " << left << setw(9) << t->course_id << " |" << endl;
+            }
+            temp = temp->next;
         }
-    }
-
-    void clearInputBuffer()
-    {
-        cin.clear();
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-    }
-
-    void addStudentTemp()
-    {
-        Student *s = new Student();
-        cout << "\n--- ADD STUDENT TEMP ---\n";
-        cout << "Enter Student ID: ";
-        getline(cin, s->student_id);
-        cout << "Enter Name: ";
-        getline(cin, s->name);
-        cout << "Enter Username: ";
-        getline(cin, s->username);
-        cout << "Enter Email: ";
-        getline(cin, s->email);
-        cout << "Enter Password: ";
-        getline(cin, s->password);
-        cout << "Enter Status: ";
-        getline(cin, s->status);
-        addDataNode(studentTempList, s, "Student");
-        cout << "Student temporary added to list.\n";
-    }
-
-    void updateStudentTemp()
-    {
-        string id;
-        cout << "\n--- UPDATE STUDENT TEMP ---\n";
-        cout << "Enter Student ID to update: ";
-        getline(cin, id);
-        cout << "Enter field to update (name/username/email/password/status): ";
-        string field, value;
-        getline(cin, field);
-        cout << "Enter new value: ";
-        getline(cin, value);
-        updateNode(studentList, id, "Student", field, value);
-    }
-
-    void deleteStudentTemp()
-    {
-        string id;
-        cout << "\n--- DELETE STUDENT TEMP ---\n";
-        cout << "Enter Student ID to delete: ";
-        getline(cin, id);
-        deleteNode(studentList, id, "Student");
-    }
-
-    void addTeacherTemp()
-    {
-        Teacher *t = new Teacher();
-        cout << "\n--- ADD TEACHER TEMP ---\n";
-        cout << "Enter Teacher ID: ";
-        getline(cin, t->teacher_id);
-        cout << "Enter Name: ";
-        getline(cin, t->name);
-        cout << "Enter Course ID: ";
-        getline(cin, t->course_id);
-        addDataNode(teacherTempList, t, "Teacher");
-        cout << "Teacher temporary added to list.\n";
-    }
-
-    void updateTeacherTemp()
-    {
-        string id;
-        cout << "\n--- UPDATE TEACHER TEMP ---\n";
-        cout << "Enter Teacher ID to update: ";
-        getline(cin, id);
-        cout << "Enter field to update (name/course_id): ";
-        string field, value;
-        getline(cin, field);
-        cout << "Enter new value: ";
-        getline(cin, value);
-        updateNode(teacherList, id, "Teacher", field, value);
-    }
-
-    void deleteTeacherTemp()
-    {
-        string id;
-        cout << "\n--- DELETE TEACHER TEMP ---\n";
-        cout << "Enter Teacher ID to delete: ";
-        getline(cin, id);
-        deleteNode(teacherList, id, "Teacher");
-    }
-
-    void addCourseTemp()
-    {
-        Course *c = new Course();
-        cout << "\n--- ADD COURSE TEMP ---\n";
-        cout << "Enter Course ID: ";
-        getline(cin, c->course_id);
-        cout << "Enter Course Name: ";
-        getline(cin, c->course_name);
-        cout << "Enter Teacher ID: ";
-        getline(cin, c->teacher_id);
-        cout << "Enter Credits: ";
-        getline(cin, c->credits);
-        addDataNode(courseTempList, c, "Course");
-        cout << "Course temporary added to list.\n";
-    }
-
-    void updateCourseTemp()
-    {
-        string id;
-        cout << "\n--- UPDATE COURSE TEMP ---\n";
-        cout << "Enter Course ID to update: ";
-        getline(cin, id);
-        cout << "Enter field to update (course_name/teacher_id/credits): ";
-        string field, value;
-        getline(cin, field);
-        cout << "Enter new value: ";
-        getline(cin, value);
-        updateNode(courseList, id, "Course", field, value);
-    }
-
-    void deleteCourseTemp()
-    {
-        string id;
-        cout << "\n--- DELETE COURSE TEMP ---\n";
-        cout << "Enter Course ID to delete: ";
-        getline(cin, id);
-        deleteNode(courseList, id, "Course");
-    }
-
-    void showStudentMenu()
-    {
-        int choice;
-        do
-        {
-            cout << "\n===== STUDENT MENU =====\n";
-            cout << "1. Add Student Temp\n";
-            cout << "2. Update Student Temp\n";
-            cout << "3. Delete Student Temp\n";
-            cout << "4. Add Student to List\n";
-            cout << "5. Back\n";
-            cout << "Choose: ";
-            cin >> choice;
-            clearInputBuffer();
-
-            switch (choice)
-            {
-            case 1:
-                addStudentTemp();
-                break;
-            case 2:
-                updateStudentTemp();
-                break;
-            case 3:
-                deleteStudentTemp();
-                break;
-            case 4:
-                writeDataListToFiles(studentTempList);
-                cout << "Student list saved to file.\n";
-                break;
-            case 5:
-                break;
-            default:
-                cout << "Invalid choice.\n";
-            }
-        } while (choice != 5);
-    }
-
-    void showTeacherMenu()
-    {
-        int choice;
-        do
-        {
-            cout << "\n===== TEACHER MENU =====\n";
-            cout << "1. Add Teacher Temp\n";
-            cout << "2. Update Teacher Temp\n";
-            cout << "3. Delete Teacher Temp\n";
-            cout << "4. Add Teacher to List\n";
-            cout << "5. Back\n";
-            cout << "Choose: ";
-            cin >> choice;
-            clearInputBuffer();
-
-            switch (choice)
-            {
-            case 1:
-                addTeacherTemp();
-                break;
-            case 2:
-                updateTeacherTemp();
-                break;
-            case 3:
-                deleteTeacherTemp();
-                break;
-            case 4:
-                writeDataListToFiles(teacherTempList);
-                cout << "Teacher list saved to file.\n";
-                break;
-            case 5:
-                break;
-            default:
-                cout << "Invalid choice.\n";
-            }
-        } while (choice != 5);
-    }
-
-    void showCourseMenu()
-    {
-        int choice;
-        do
-        {
-            cout << "\n===== COURSE MENU =====\n";
-            cout << "1. Add Course Temp\n";
-            cout << "2. Update Course Temp\n";
-            cout << "3. Delete Course Temp\n";
-            cout << "4. Add Course to List\n";
-            cout << "5. Back\n";
-            cout << "Choose: ";
-            cin >> choice;
-            clearInputBuffer();
-
-            switch (choice)
-            {
-            case 1:
-                addCourseTemp();
-                break;
-            case 2:
-                updateCourseTemp();
-                break;
-            case 3:
-                deleteCourseTemp();
-                break;
-            case 4:
-                writeDataListToFiles(courseTempList);
-                cout << "Course list saved to file.\n";
-                break;
-            case 5:
-                break;
-            default:
-                cout << "Invalid choice.\n";
-            }
-        } while (choice != 5);
+        cout << "+------+----------------------+-----------+" << endl;
     }
 
 public:
-    AdminDashboard()
-    {
-        loadAllData();
-    }
-
-    void run()
-    {
-        int choice;
-        do
-        {
-            cout << "\n===== ADMIN DASHBOARD =====\n";
-            cout << "1. Student\n";
-            cout << "2. Teacher\n";
-            cout << "3. Course\n";
-            cout << "4. Exit\n";
-            cout << "Choose: ";
-            cin >> choice;
-            clearInputBuffer();
-
-            switch (choice)
-            {
-            case 1:
-                showStudentMenu();
-                break;
-            case 2:
-                showTeacherMenu();
-                break;
-            case 3:
-                showCourseMenu();
-                break;
-            case 4:
-                cout << "Exiting admin dashboard...\n";
-                break;
-            default:
-                cout << "Invalid choice.\n";
+    // studentDB / courseDB / enrollDB / pendingDB / teacherDB are each a
+    // dedicated dataList holding exactly one dataType.
+    static void render(dataList* studentDB, dataList* pendingDB, dataList* enrollDB,
+                        dataList* courseDB, dataList* teacherDB) {
+        while (true) {
+            cout << "\n--- Admin Menu ---" << endl;
+            cout << "1. Add student" << endl;
+            cout << "2. Update student" << endl;
+            cout << "3. Delete student" << endl;
+            cout << "4. View all students" << endl;
+            cout << "5. View pending enrollments" << endl;
+            cout << "6. Add course" << endl;
+            cout << "0. Logout" << endl;
+            cout << "Select: ";
+            int choice;
+            if (!(cin >> choice)) {
+                cin.clear();
+                cin.ignore(10000, '\n');
+                continue;
             }
-        } while (choice != 4);
+
+            if (choice == 0) break;
+
+            // Add student
+            if (choice == 1) {
+                displayStudentsTable(studentDB);
+                string name, username, email, password;
+                cout << "Name: "; cin >> ws; getline(cin, name);
+                cout << "Username: "; cin >> username;
+                cout << "Email: "; cin >> email;
+                cout << "Password: "; cin >> password;
+
+                // SXXX
+                int newIdNum = studentDB->n + 1;
+                string newId = "S";
+                if (newIdNum < 10) newId += "00";
+                else if (newIdNum < 100) newId += "0";
+                newId += to_string(newIdNum);
+
+                Student* s = new Student{newId, name, username, email, password, "pending"};
+                addDataNode(studentDB, s, "Student");
+                writeDataListToFiles(studentDB);
+                cout << "Student added with ID " << newId << "." << endl;
+            }
+            // Update student
+            else if (choice == 2) {
+                displayStudentsTable(studentDB);
+                string idToUpdate;
+                cout << "Student ID to update: ";
+                cin >> idToUpdate;
+                cin.ignore(10000, '\n');
+
+                Student* s = (Student*)findData(studentDB, idToUpdate, "Student");
+                if (!s) {
+                    cout << "Not found." << endl;
+                } else {
+                    string input;
+
+                    cout << "New Name (Current: " << s->name << ") [Press Enter to skip]: ";
+                    getline(cin, input);
+                    if (!input.empty()) updateNode(studentDB, idToUpdate, "Student", "name", input);
+
+                    cout << "New Username (Current: " << s->username << ") [Press Enter to skip]: ";
+                    getline(cin, input);
+                    if (!input.empty()) updateNode(studentDB, idToUpdate, "Student", "username", input);
+
+                    cout << "New Email (Current: " << s->email << ") [Press Enter to skip]: ";
+                    getline(cin, input);
+                    if (!input.empty()) updateNode(studentDB, idToUpdate, "Student", "email", input);
+
+                    cout << "New Password (Current: " << s->password << ") [Press Enter to skip]: ";
+                    getline(cin, input);
+                    if (!input.empty()) updateNode(studentDB, idToUpdate, "Student", "password", input);
+                }
+            }
+            // Delete student
+            else if (choice == 3) {
+                displayStudentsTable(studentDB);
+                string idToDelete;
+                cout << "Student ID to delete: ";
+                cin >> idToDelete;
+                deleteNode(studentDB, idToDelete, "Student");
+            }
+            // View all students
+            else if (choice == 4) {
+                displayStudentsTable(studentDB);
+            }
+            // View pending enrollments
+            else if (choice == 5) {
+                while (true) {
+                    if (pendingDB->n == 0) {
+                        cout << "No pending enrollments." << endl;
+                        break;
+                    }
+
+                    displayPendingEnrollmentsTable(pendingDB, studentDB, courseDB);
+                    cout << "do you want to accept(1) or reject (0) or go back(9)? ";
+                    int action;
+                    cin >> action;
+
+                    if (action == 1 || action == 0) {
+                        // Always handle the oldest request first (head of the
+                        // list = first one added, since addDataNode appends
+                        // to the tail). Grab its fields before deleteNode
+                        // frees the underlying PendingEnrollment.
+                        PendingEnrollment* pe = (PendingEnrollment*)pendingDB->head->data;
+                        string enrollmentId = pe->enrollment_id;
+                        string studentId = pe->student_id;
+                        string courseId = pe->course_id;
+
+                        if (action == 1) {
+                            Enrollment* e = new Enrollment{enrollmentId, studentId, courseId};
+                            addDataNode(enrollDB, e, "Enrollment");
+                            writeDataListToFiles(enrollDB);
+
+                            updateNode(studentDB, studentId, "Student", "status", "enrolled");
+                            deleteNode(pendingDB, enrollmentId, "PendingEnrollment");
+                            cout << "Approved." << endl;
+                        } else {
+                            deleteNode(pendingDB, enrollmentId, "PendingEnrollment");
+                            cout << "Rejected." << endl;
+                        }
+                    } else if (action == 9) {
+                        break;
+                    }
+                }
+            }
+            // Add course
+            else if (choice == 6) {
+                displayTeachersTable(teacherDB);
+
+                string teacherId;
+                cout << "Teacher ID: ";
+                cin >> teacherId;
+
+                Teacher* t = (Teacher*)findData(teacherDB, teacherId, "Teacher");
+                if (!t) {
+                    cout << "Invalid Teacher ID" << endl;
+                } else {
+                    string courseName, credits;
+                    cout << "Course Name: "; cin >> ws; getline(cin, courseName);
+                    cout << "Credits: "; cin >> credits;
+
+                    // CXXX
+                    int newIdNum = courseDB->n + 1;
+                    string newId = "C";
+                    if (newIdNum < 10) newId += "00";
+                    else if (newIdNum < 100) newId += "0";
+                    newId += to_string(newIdNum);
+
+                    Course* c = new Course{newId, courseName, teacherId, credits};
+                    addDataNode(courseDB, c, "Course");
+                    writeDataListToFiles(courseDB);
+                    cout << "Course added with ID " << newId << "." << endl;
+                }
+            }
+        }
     }
 };
-
-int main()
-{
-    AdminDashboard admin;
-    admin.run();
-    return 0;
-}

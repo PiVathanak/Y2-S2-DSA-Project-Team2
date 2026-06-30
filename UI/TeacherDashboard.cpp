@@ -1,361 +1,147 @@
+#pragma once
 #include <iostream>
 #include <string>
-#include <vector>
+#include <iomanip>
+#include "../tools/Models.cpp"
+#include "../LinkList/LinkedList.cpp"
+#include "../Tree/BST.cpp"
+#include "../HashTable/HashTable.cpp"
+
 
 using namespace std;
 
-class TeacherDashboard
-{
-private:
-    string teacherName;
-    string teacherID;
-    string teacherEmail;
-    string department;
-    vector<string> teachingCourses;
-    vector<int> studentCounts;
-
+class TeacherDashboard {
 public:
-    TeacherDashboard()
-    {
-        teacherName = "";
-        teacherID = "";
-        teacherEmail = "";
-        department = "";
-    }
-
-    void displayTeacherHeader()
-    {
-        cout << "\n=====================================" << endl;
-        cout << "       TEACHER DASHBOARD            " << endl;
-        cout << "=====================================" << endl;
-        cout << "Welcome, " << teacherName << "!" << endl;
-        cout << "Teacher ID: " << teacherID << endl;
-        cout << "Department: " << department << endl;
-        cout << "Email: " << teacherEmail << endl;
-        cout << "=====================================" << endl;
-        cout << endl;
-    }
-
-    void displayMainMenu()
-    {
-        cout << "--- DASHBOARD MENU ---" << endl;
-        cout << "1. View Teaching Courses" << endl;
-        cout << "2. Manage Course" << endl;
-        cout << "3. Grade Management" << endl;
-        cout << "4. Student Attendance" << endl;
-        cout << "5. Create/Upload Assignment" << endl;
-        cout << "6. View Student Messages" << endl;
-        cout << "7. Class Analytics" << endl;
-        cout << "8. Update Profile" << endl;
-        cout << "9. Logout" << endl;
-        cout << "\nEnter your choice (1-9): ";
-    }
-
-    int getUserChoice()
-    {
-        displayTeacherHeader();
-        displayMainMenu();
-
-        int choice;
-        cin >> choice;
-        cin.ignore();
-
-        return choice;
-    }
-
-    void viewTeachingCourses()
-    {
-        cout << "\n--- TEACHING COURSES ---" << endl;
-
-        if (teachingCourses.empty())
-        {
-            cout << "No courses assigned." << endl;
-            return;
-        }
-
-        for (int i = 0; i < teachingCourses.size(); i++)
-        {
-            cout << i + 1 << ". " << teachingCourses[i]
-                 << " (" << studentCounts[i] << " students)" << endl;
-        }
-        cout << "\n[Course data - Not yet connected to backend]" << endl;
-    }
-
-    void manageCourse()
-    {
-        cout << "\n--- MANAGE COURSE ---" << endl;
-        cout << "Select course:" << endl;
-
-        for (int i = 0; i < teachingCourses.size(); i++)
-        {
-            cout << i + 1 << ". " << teachingCourses[i] << endl;
-        }
-
-        cout << "Enter course number: ";
-        int choice;
-        cin >> choice;
-        cin.ignore();
-
-        if (choice > 0 && choice <= teachingCourses.size())
-        {
-            cout << "\n--- Managing: " << teachingCourses[choice - 1] << " ---" << endl;
-            cout << "1. Update Course Info" << endl;
-            cout << "2. Add/Remove Student" << endl;
-            cout << "3. Upload Course Materials" << endl;
-            cout << "4. View Student List" << endl;
-            cout << "5. Back" << endl;
-
-            cout << "Enter choice: ";
-            int subChoice;
-            cin >> subChoice;
-            cin.ignore();
-
-            cout << "[Course management - Not yet connected to system]" << endl;
-        }
-    }
-
-    void gradeManagement()
-    {
-        cout << "\n--- GRADE MANAGEMENT ---" << endl;
-        cout << "Select course:" << endl;
-
-        for (int i = 0; i < teachingCourses.size(); i++)
-        {
-            cout << i + 1 << ". " << teachingCourses[i] << endl;
-        }
-
-        cout << "Enter course number: ";
-        int choice;
-        cin >> choice;
-        cin.ignore();
-
-        if (choice > 0 && choice <= teachingCourses.size())
-        {
-            cout << "\n--- Grade Management: " << teachingCourses[choice - 1] << " ---" << endl;
-            cout << "1. Enter Student Grades" << endl;
-            cout << "2. View Grade Distribution" << endl;
-            cout << "3. Generate Grade Report" << endl;
-            cout << "4. Adjust Grades" << endl;
-
-            cout << "Enter choice: ";
-            int subChoice;
-            cin >> subChoice;
-            cin.ignore();
-
-            cout << "[Grade data - Not yet connected to database]" << endl;
-        }
-    }
-
-    void studentAttendance()
-    {
-        cout << "\n--- STUDENT ATTENDANCE ---" << endl;
-        cout << "Select course:" << endl;
-
-        for (int i = 0; i < teachingCourses.size(); i++)
-        {
-            cout << i + 1 << ". " << teachingCourses[i]
-                 << " (" << studentCounts[i] << " students)" << endl;
-        }
-
-        cout << "Enter course number: ";
-        int choice;
-        cin >> choice;
-        cin.ignore();
-
-        if (choice > 0 && choice <= teachingCourses.size())
-        {
-            cout << "\n--- Attendance Tracking: " << teachingCourses[choice - 1] << " ---" << endl;
-            cout << "Date: [Select Date]" << endl;
-            cout << "1. Mark Attendance" << endl;
-            cout << "2. View Attendance Report" << endl;
-            cout << "3. Generate Attendance Summary" << endl;
-
-            cout << "Enter choice: ";
-            int subChoice;
-            cin >> subChoice;
-            cin.ignore();
-
-            cout << "[Attendance data - Not yet connected]" << endl;
-        }
-    }
-
-    void createAssignment()
-    {
-        cout << "\n--- CREATE/UPLOAD ASSIGNMENT ---" << endl;
-        cout << "Select course:" << endl;
-
-        for (int i = 0; i < teachingCourses.size(); i++)
-        {
-            cout << i + 1 << ". " << teachingCourses[i] << endl;
-        }
-
-        cout << "Enter course number: ";
-        int choice;
-        cin >> choice;
-        cin.ignore();
-
-        if (choice > 0 && choice <= teachingCourses.size())
-        {
-            cout << "\nAssignment Title: ";
-            string title;
-            getline(cin, title);
-
-            cout << "Description: ";
-            string description;
-            getline(cin, description);
-
-            cout << "Due Date (DD/MM/YYYY): ";
-            string dueDate;
-            getline(cin, dueDate);
-
-            cout << "\n[Assignment created - Not yet connected to system]" << endl;
-            cout << "Ready to upload to: " << teachingCourses[choice - 1] << endl;
-        }
-    }
-
-    void viewMessages()
-    {
-        cout << "\n--- STUDENT MESSAGES ---" << endl;
-        cout << "Unread Messages: 5" << endl;
-        cout << "\n1. From STU001 - Subject: Project Help" << endl;
-        cout << "2. From STU005 - Subject: Extension Request" << endl;
-        cout << "3. From STU012 - Subject: Clarification Needed" << endl;
-        cout << "\n[Messages - Not yet connected to backend]" << endl;
-    }
-
-    void classAnalytics()
-    {
-        cout << "\n--- CLASS ANALYTICS ---" << endl;
-        cout << "Select course:" << endl;
-
-        for (int i = 0; i < teachingCourses.size(); i++)
-        {
-            cout << i + 1 << ". " << teachingCourses[i] << endl;
-        }
-
-        cout << "Enter course number: ";
-        int choice;
-        cin >> choice;
-        cin.ignore();
-
-        if (choice > 0 && choice <= teachingCourses.size())
-        {
-            cout << "\n--- Analytics: " << teachingCourses[choice - 1] << " ---" << endl;
-            cout << "Total Students: " << studentCounts[choice - 1] << endl;
-            cout << "Average Grade: [To be calculated]" << endl;
-            cout << "Attendance Rate: [To be calculated]" << endl;
-            cout << "Assignment Submission Rate: [To be calculated]" << endl;
-            cout << "\n[Analytics data - Not yet connected to database]" << endl;
-        }
-    }
-
-    void updateProfile()
-    {
-        cout << "\n--- UPDATE PROFILE ---" << endl;
-        cout << "1. Change Email" << endl;
-        cout << "2. Change Password" << endl;
-        cout << "3. Update Office Hours" << endl;
-        cout << "4. Back" << endl;
-        cout << "Enter choice: ";
-
-        int choice;
-        cin >> choice;
-        cin.ignore();
-
-        switch (choice)
-        {
-        case 1:
-        {
-            cout << "Enter new email: ";
-            string newEmail;
-            getline(cin, newEmail);
-            teacherEmail = newEmail;
-            cout << "[Email update - Not yet connected]" << endl;
-            break;
-        }
-        case 2:
-        {
-            cout << "Enter new password: ";
-            string newPass;
-            getline(cin, newPass);
-            cout << "[Password update - Not yet connected]" << endl;
-            break;
-        }
-        case 3:
-        {
-            cout << "Enter office hours: ";
-            string officeHours;
-            getline(cin, officeHours);
-            cout << "[Office hours update - Not yet connected]" << endl;
-            break;
-        }
-        }
-    }
-
-    void handleChoice(int choice)
-    {
-        switch (choice)
-        {
-        case 1:
-            viewTeachingCourses();
-            break;
-        case 2:
-            manageCourse();
-            break;
-        case 3:
-            gradeManagement();
-            break;
-        case 4:
-            studentAttendance();
-            break;
-        case 5:
-            createAssignment();
-            break;
-        case 6:
-            viewMessages();
-            break;
-        case 7:
-            classAnalytics();
-            break;
-        case 8:
-            updateProfile();
-            break;
-        case 9:
-            cout << "\nLogging out..." << endl;
-            return;
-        default:
-            cout << "Invalid choice! Try again." << endl;
-        }
-
-        cout << "\nPress Enter to continue...";
-        cin.get();
-    }
-
-    void run()
-    {
-        int choice;
-        bool running = true;
-
-        while (running)
-        {
-            choice = getUserChoice();
-            if (choice == 9)
-            {
-                handleChoice(choice);
-                running = false;
+    static void render(string userId, LinkedList& teacherList, LinkedList& enrollList, LinkedList& studentList) {
+        Teacher* myTeacher = nullptr;
+        ListNode* curr = teacherList.head;
+        while(curr) {
+            Teacher* t = (Teacher*)curr->data;
+            if (t->teacher_id == userId) {
+                myTeacher = t;
+                break;
             }
-            else
-            {
-                handleChoice(choice);
+            curr = curr->next;
+        }
+
+        if (!myTeacher) {
+            cout << "Teacher record not found." << endl;
+            return;
+        }
+
+        cout << "\nWelcome, " << myTeacher->name << "!" << endl;
+
+        while (true) {
+            cout << "\n--- Teacher Menu ---" << endl;
+            cout << "1. View the students enrolled in my course" << endl;
+            cout << "2. Search for a student" << endl;
+            cout << "0. Logout" << endl;
+            cout << "Select: ";
+            int choice;
+            if (!(cin >> choice)) {
+                cin.clear();
+                cin.ignore(10000, '\n');
+                continue;
+            }
+
+            if (choice == 0) break;
+
+            if (choice == 1 || choice == 2) {
+                LinkedList rosterList;
+                ListNode* eNode = enrollList.head;
+                while (eNode) {
+                    Enrollment* e = (Enrollment*)eNode->data;
+                    if (e->course_id == myTeacher->course_id) {
+                        ListNode* sNode = studentList.head;
+                        while(sNode) {
+                            Student* s = (Student*)sNode->data;
+                            if (s->student_id == e->student_id && s->status == "enrolled") {
+                                rosterList.append(s);
+                                break;
+                            }
+                            sNode = sNode->next;
+                        }
+                    }
+                    eNode = eNode->next;
+                }
+
+                if (choice == 1) {
+                    cout << "\n--- Enrolled Students (Sorted A-Z) ---" << endl;
+                    // Build BST from roster — in-order traversal gives alphabetical order
+                    BST classRoster;
+                    ListNode* rNode = rosterList.head;
+                    while (rNode) {
+                        classRoster.insert((Student*)rNode->data);
+                        rNode = rNode->next;
+                    }
+
+                    int n = rosterList.count;
+                    if (n == 0) {
+                        cout << "No students enrolled." << endl;
+                    } else {
+                        Student** arr = new Student*[n];
+                        int collected = 0;
+                        classRoster.collectInOrder(arr, collected);
+
+                        cout << "+" << string(10, '-') << "+" << string(30, '-') << "+" << string(35, '-') << "+" << endl;
+                        cout << "| " << left << setw(8) << "ID" << " | " << setw(28) << "Name" << " | " << setw(33) << "Email" << " |" << endl;
+                        cout << "+" << string(10, '-') << "+" << string(30, '-') << "+" << string(35, '-') << "+" << endl;
+
+                        for (int j = 0; j < collected; j++) {
+                            Student* s = arr[j];
+                            cout << "| " << left << setw(8) << s->student_id
+                                 << " | " << setw(28) << s->name
+                                 << " | " << setw(33) << s->email << " |" << endl;
+                        }
+                        cout << "+" << string(10, '-') << "+" << string(30, '-') << "+" << string(35, '-') << "+" << endl;
+
+                        delete[] arr;
+                    }
+                } else if (choice == 2) {
+                    HashTable ht;
+                    ListNode* currNode = rosterList.head;
+                    while (currNode) {
+                        Student* s = (Student*)currNode->data;
+                        string lowerName = "";
+                        for (char c : s->name) lowerName += tolower(c);
+                        
+                        string prefix = "";
+                        for (char c : lowerName) {
+                            prefix += c;
+                            ht.insert(prefix, s);
+                        }
+                        currNode = currNode->next;
+                    }
+
+                    cout << "\nEnter student name to search: ";
+                    string searchName;
+                    cin >> ws; getline(cin, searchName);
+                    
+                    string lowerSearch = "";
+                    for (char c : searchName) lowerSearch += tolower(c);
+                    
+                    void* results[100];
+                    int count = 0;
+                    ht.search(lowerSearch, results, count, 100);
+                    
+                    if (count > 0) {
+                        cout << "\n--- Search Results ---" << endl;
+                        cout << "+" << string(10, '-') << "+" << string(30, '-') << "+" << string(35, '-') << "+" << endl;
+                        cout << "| " << left << setw(8) << "ID" << " | " << setw(28) << "Name" << " | " << setw(33) << "Email" << " |" << endl;
+                        cout << "+" << string(10, '-') << "+" << string(30, '-') << "+" << string(35, '-') << "+" << endl;
+                        
+                        for (int i = 0; i < count; i++) {
+                            Student* s = (Student*)results[i];
+                            cout << "| " << left << setw(8) << s->student_id 
+                                 << " | " << setw(28) << s->name 
+                                 << " | " << setw(33) << s->email << " |" << endl;
+                        }
+                        cout << "+" << string(10, '-') << "+" << string(30, '-') << "+" << string(35, '-') << "+" << endl;
+                    } else {
+                        cout << "Student not found in your course." << endl;
+                    }
+                }
             }
         }
     }
 };
-
-// Main function for testing
-int main()
-{
-    TeacherDashboard dashboard;
-    dashboard.run();
-    return 0;
-}

@@ -132,9 +132,9 @@ void enrollCourse(string studentID)
     cout << "Status: PENDING" << endl;
 }
 
-int main()
+void test()
 {
-    string studentID = getActiveStudentID();
+    string studentID = "S001";
 
     if (studentID.empty())
     {
@@ -144,6 +144,4 @@ int main()
 
     cout << "Current Student: " << studentID << endl;
     enrollCourse(studentID);
-
-    return 0;
 }

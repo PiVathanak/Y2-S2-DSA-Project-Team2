@@ -1,5 +1,6 @@
 #include <iostream>
-#include "../tools/CSVReader.h"
+#include <fstream>
+#include "../tools/Models.cpp"
 using namespace std;
 // Generic node to store CSV data
 struct DataNode
@@ -49,39 +50,83 @@ void addDataNode(dataList *dl, void *data, string dataType)
     dl->n++;
 }
 
+// ====================== FIND ======================
+// Returns the raw data pointer for the node matching id+dataType, or nullptr.
+// Cast the result to the right struct type, e.g.:
+//   Student* s = (Student*)findData(studentDB, "S001", "Student");
+void *findData(dataList *dl, const string &id, const string &dataType)
+{
+    DataNode *temp = dl->head;
+    while (temp != nullptr)
+    {
+        if (temp->dataType == dataType)
+        {
+            string currentId;
+            if (dataType == "Student")
+                currentId = ((Student *)temp->data)->student_id;
+            else if (dataType == "Teacher")
+                currentId = ((Teacher *)temp->data)->teacher_id;
+            else if (dataType == "Course")
+                currentId = ((Course *)temp->data)->course_id;
+            else if (dataType == "Enrollment")
+                currentId = ((Enrollment *)temp->data)->enrollment_id;
+            else if (dataType == "PendingEnrollment")
+                currentId = ((PendingEnrollment *)temp->data)->enrollment_id;
+            else if (dataType == "Admin")
+                currentId = ((Admin *)temp->data)->admin_id;
+
+            if (currentId == id)
+                return temp->data;
+        }
+        temp = temp->next;
+    }
+    return nullptr;
+}
+
+// ====================== PERSIST ======================
+// Rewrites the whole CSV from the current list every call (assumes each
+// dataList instance holds one entity type only, e.g. studentDB only ever
+// holds "Student" nodes).
 void writeDataListToFiles(dataList *dl)
 {
     if (dl == nullptr || dl->head == nullptr)
         return;
 
-    DataNode *temp = dl->head;
+    string dataType = dl->head->dataType;
     string fileName = "";
 
-    if (temp->dataType == "Student")
+    if (dataType == "Student")
         fileName = "DataBase/Students.csv";
-    else if (temp->dataType == "Teacher")
+    else if (dataType == "Teacher")
         fileName = "DataBase/Teachers.csv";
-    else if (temp->dataType == "Course")
+    else if (dataType == "Course")
         fileName = "DataBase/Courses.csv";
+    else if (dataType == "Enrollment")
+        fileName = "DataBase/Enrollments.csv";
+    else if (dataType == "PendingEnrollment")
+        fileName = "DataBase/PendingEnrollment.csv";
 
     if (fileName.empty())
         return;
 
-    bool fileExists = ifstream(fileName).good();
-    ofstream outFile(fileName, ios::app);
+    // ios::trunc -> always rewrite the whole file from the in-memory list,
+    // instead of appending and duplicating rows on every save.
+    ofstream outFile(fileName, ios::trunc);
     if (!outFile.is_open())
         return;
 
-    if (!fileExists)
-    {
-        if (fileName == "DataBase/Students.csv")
-            outFile << "student_id,name,username, email, password,status\n";
-        else if (fileName == "DataBase/Teachers.csv")
-            outFile << "teacher_id,name,course_id\n";
-        else if (fileName == "DataBase/Courses.csv")
-            outFile << "course_id,course_name,teacher_id,credits\n";
-    }
+    if (dataType == "Student")
+        outFile << "student_id,name,username,email,password,status\n";
+    else if (dataType == "Teacher")
+        outFile << "teacher_id,name,course_id\n";
+    else if (dataType == "Course")
+        outFile << "course_id,course_name,teacher_id,credits\n";
+    else if (dataType == "Enrollment")
+        outFile << "enrollment_id,student_id,course_id\n";
+    else if (dataType == "PendingEnrollment")
+        outFile << "enrollment_id,student_id,course_id\n";
 
+    DataNode *temp = dl->head;
     while (temp != nullptr)
     {
         if (temp->dataType == "Student")
@@ -102,6 +147,16 @@ void writeDataListToFiles(dataList *dl)
             Course *c = (Course *)temp->data;
             outFile << c->course_id << "," << c->course_name << ","
                     << c->teacher_id << "," << c->credits << "\n";
+        }
+        else if (temp->dataType == "Enrollment")
+        {
+            Enrollment *e = (Enrollment *)temp->data;
+            outFile << e->enrollment_id << "," << e->student_id << "," << e->course_id << "\n";
+        }
+        else if (temp->dataType == "PendingEnrollment")
+        {
+            PendingEnrollment *p = (PendingEnrollment *)temp->data;
+            outFile << p->enrollment_id << "," << p->student_id << "," << p->course_id << "\n";
         }
         temp = temp->next;
     }
@@ -178,6 +233,7 @@ void updateNode(dataList *dl, const string &id, const string &dataType, const st
                         e->student_id = newValue;
                     else if (field == "course_id")
                         e->course_id = newValue;
+                    writeDataListToFiles(dl);
                     cout << "Updated successfully!" << endl;
                     return;
                 }
@@ -191,6 +247,7 @@ void updateNode(dataList *dl, const string &id, const string &dataType, const st
                         p->student_id = newValue;
                     else if (field == "course_id")
                         p->course_id = newValue;
+                    writeDataListToFiles(dl);
                     cout << "Updated successfully!" << endl;
                     return;
                 }
@@ -204,25 +261,6 @@ void updateNode(dataList *dl, const string &id, const string &dataType, const st
                         a->username = newValue;
                     else if (field == "password")
                         a->password = newValue;
-                    cout << "Updated successfully!" << endl;
-                    return;
-                }
-            }
-            else if (dataType == "PendingUser")
-            {
-                PendingUser *u = (PendingUser *)temp->data;
-                if (u->student_id == id)
-                {
-                    if (field == "name")
-                        u->name = newValue;
-                    else if (field == "username")
-                        u->username = newValue;
-                    else if (field == "email")
-                        u->email = newValue;
-                    else if (field == "password")
-                        u->password = newValue;
-                    else if (field == "status")
-                        u->status = newValue;
                     cout << "Updated successfully!" << endl;
                     return;
                 }
@@ -282,11 +320,6 @@ void deleteNode(dataList *dl, const string &id, const string &dataType)
                 Admin *a = (Admin *)temp->data;
                 foundId = (a->admin_id == id);
             }
-            else if (dataType == "PendingUser")
-            {
-                PendingUser *u = (PendingUser *)temp->data;
-                foundId = (u->student_id == id);
-            }
 
             if (foundId)
             {
@@ -318,8 +351,6 @@ void deleteNode(dataList *dl, const string &id, const string &dataType)
                     delete (PendingEnrollment *)temp->data;
                 else if (temp->dataType == "Admin")
                     delete (Admin *)temp->data;
-                else if (temp->dataType == "PendingUser")
-                    delete (PendingUser *)temp->data;
 
                 delete temp;
                 dl->n--;
@@ -389,16 +420,6 @@ void displayDataList(dataList *dl)
                  << " | Username: " << a->username
                  << " | Password: " << a->password << endl;
         }
-        else if (temp->dataType == "PendingUser")
-        {
-            PendingUser *u = (PendingUser *)temp->data;
-            cout << index++ << ". [PendingUser] ID: " << u->student_id
-                 << " | Name: " << u->name
-                 << " | Username: " << u->username
-                 << " | Email: " << u->email
-                 << " | Password: " << u->password
-                 << " | Status: " << u->status << endl;
-        }
         temp = temp->next;
     }
 }
@@ -424,8 +445,6 @@ void deleteDataList(dataList *dl)
             delete (PendingEnrollment *)temp->data;
         else if (temp->dataType == "Admin")
             delete (Admin *)temp->data;
-        else if (temp->dataType == "PendingUser")
-            delete (PendingUser *)temp->data;
 
         delete temp;
         temp = next;

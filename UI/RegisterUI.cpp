@@ -1,164 +1,90 @@
+#pragma once
 #include <iostream>
 #include <string>
-#include <regex>
+#include <conio.h>
+#include "../tools/Models.cpp"
+#include "../LinkList/LinkedList.cpp"
+#include "../tools/CSVManager.cpp"
 
 using namespace std;
 
-class RegisterUI
-{
-private:
-    string fullName;
-    string email;
-    string studentID;
-    string password;
-    string confirmPassword;
-    string userType;
-
-public:
-    RegisterUI()
-    {
-        fullName = "";
-        email = "";
-        studentID = "";
-        password = "";
-        confirmPassword = "";
-        userType = "";
-    }
-
-    void displayRegisterMenu()
-    {
-        cout << "\n=============================" << endl;
-        cout << "   SYSTEM REGISTRATION      " << endl;
-        cout << "=============================" << endl;
-        cout << endl;
-    }
-
-    int getRegistrationType()
-    {
-        displayRegisterMenu();
-
-        cout << "1. Register as Student" << endl;
-        cout << "2. Register as Teacher" << endl;
-        cout << "3. Go Back to Main Menu" << endl;
-        cout << "\nEnter your choice (1-3): ";
-
-        int choice;
-        cin >> choice;
-        cin.ignore();
-
-        return choice;
-    }
-
-    void registerStudent()
-    {
-        cout << "\n--- STUDENT REGISTRATION ---" << endl;
-
-        cout << "Enter Full Name: ";
-        getline(cin, fullName);
-
-        cout << "Enter Student ID: ";
-        getline(cin, studentID);
-
-        cout << "Enter Email Address: ";
-        getline(cin, email);
-
-        cout << "Enter Password: ";
-        getline(cin, password);
-
-        cout << "Confirm Password: ";
-        getline(cin, confirmPassword);
-
-        displayRegistrationSummary("STUDENT");
-    }
-
-    void registerTeacher()
-    {
-        cout << "\n--- TEACHER REGISTRATION ---" << endl;
-
-        cout << "Enter Full Name: ";
-        getline(cin, fullName);
-
-        cout << "Enter Teacher ID: ";
-        getline(cin, studentID);
-
-        cout << "Enter Email Address: ";
-        getline(cin, email);
-
-        cout << "Enter Department: ";
-        string department;
-        getline(cin, department);
-
-        cout << "Enter Password: ";
-        getline(cin, password);
-
-        cout << "Confirm Password: ";
-        getline(cin, confirmPassword);
-
-        displayRegistrationSummary("TEACHER");
-    }
-
-    void displayRegistrationSummary(string type)
-    {
-        cout << "\n--- REGISTRATION SUMMARY ---" << endl;
-        cout << "Type: " << type << endl;
-        cout << "Full Name: " << fullName << endl;
-        cout << "ID: " << studentID << endl;
-        cout << "Email: " << email << endl;
-        cout << "Password: ***" << endl;
-
-        if (password == confirmPassword)
-        {
-            cout << "\n✓ Passwords match" << endl;
-            cout << "[Registration Data - Not yet connected to database]" << endl;
-            cout << "Status: Ready to submit" << endl;
-        }
-        else
-        {
-            cout << "\n✗ Passwords do not match!" << endl;
-            cout << "Please try again." << endl;
-        }
-    }
-
-    void handleRegistration(int choice)
-    {
-        switch (choice)
-        {
-        case 1:
-            registerStudent();
-            break;
-        case 2:
-            registerTeacher();
-            break;
-        case 3:
-            cout << "\nReturning to main menu..." << endl;
-            break;
-        default:
-            cout << "\nInvalid choice! Please try again." << endl;
-        }
-    }
-
-    void run()
-    {
-        int choice;
-        bool running = true;
-
-        while (running)
-        {
-            choice = getRegistrationType();
-            handleRegistration(choice);
-
-            if (choice == 3)
-            {
-                running = false;
+// Reads password character-by-character, displaying '*' instead of actual chars
+static string getPasswordReg() {
+    string password = "";
+    char ch;
+    while ((ch = _getch()) != '\r') {  // '\r' = Enter key
+        if (ch == '\b') {              // Backspace
+            if (!password.empty()) {
+                cout << "\b \b";      // erase the last '*'
+                password.pop_back();
             }
+        } else if (ch >= 32 && ch < 127) { // printable ASCII only
+            password += ch;
+            cout << '*';
         }
+    }
+    cout << endl;
+    return password;
+}
+
+class RegisterUI {
+public:
+    static void render(LinkedList& studentList) {
+        cout << "\n--- Student Registration ---" << endl;
+        string name, username, email, password;
+        
+        cout << "Full Name: ";
+        cin >> ws;
+        getline(cin, name);
+        
+        cout << "Username: ";
+        cin >> username;
+        
+        // Check if username already exists
+        ListNode* curr = studentList.head;
+        while (curr) {
+            Student* s = (Student*)curr->data;
+            if (s->username == username) {
+                cout << "Error: Username already exists. Registration failed." << endl;
+                return;
+            }
+            curr = curr->next;
+        }
+        
+        cout << "Email: ";
+        cin >> email;
+        
+        cout << "Password: ";
+        password = getPasswordReg();
+        
+        // Generate new ID: find the highest existing numeric ID to avoid reuse
+        int maxIdNum = 0;
+        ListNode* idNode = studentList.head;
+        while (idNode) {
+            Student* existing = (Student*)idNode->data;
+            if (existing->student_id.length() > 1) {
+                int num = 0;
+                string numStr = existing->student_id.substr(1);
+                for (int i = 0; i < (int)numStr.length(); i++) {
+                    if (numStr[i] >= '0' && numStr[i] <= '9')
+                        num = num * 10 + (numStr[i] - '0');
+                }
+                if (num > maxIdNum) maxIdNum = num;
+            }
+            idNode = idNode->next;
+        }
+        int newIdNum = maxIdNum + 1;
+        string newId = "S";
+        if (newIdNum < 10) newId += "00";
+        else if (newIdNum < 100) newId += "0";
+        newId += to_string(newIdNum);
+        
+        Student* s = new Student{newId, name, username, email, password, "pending"};
+        studentList.append(s);
+        
+        CSVManager::saveStudents(studentList);
+        
+        cout << "Registration successful! Your ID is " << newId << endl;
+        cout << "You can now Login to the Account" << endl;
     }
 };
-
-// Main function for testing
-int main()
-{
-    RegisterUI registration;
-    registration.run();
-    return 0;
-}

@@ -5,6 +5,7 @@
 #include <cctype>
 #include "HashTable.h"
 #include "../Sorting/Sorting.h"
+#include "../tools/Animation.h"
 
 using namespace std;
 
@@ -98,16 +99,18 @@ HashTable::~HashTable() {
 
 // Student search helper
 void studentSearchCourse(HashTable& courseHash, LinkedList& teacherList) {
-    cout << "\nEnter course ID or Name to search: ";
+    cout << "\nEnter " << Animation::CYAN << "course ID or Name" << Animation::RESET << " to search: ";
     string term;
     cin >> ws; getline(cin, term);
+
+    Animation::showLoading("Searching courses for '" + term + "'");
 
     void* rawResults[100];
     int count = 0;
     courseHash.searchPartial(term, rawResults, count, 100);
 
     if (count == 0) {
-        cout << "Course not found." << endl;
+        cout << "\033[1;31mCourse not found.\033[0m" << endl;
     } else {
         Course* results[100];
         for (int i = 0; i < count; i++) results[i] = (Course*)rawResults[i];
@@ -133,10 +136,12 @@ void teacherSearchStudent(LinkedList& rosterList) {
         currNode = currNode->next;
     }
 
-    cout << "\nEnter student name to search: ";
+    cout << "\nEnter " << Animation::CYAN << "student name" << Animation::RESET << " to search: ";
     string searchName;
     cin >> ws; getline(cin, searchName);
     
+    Animation::showLoading("Searching roster for '" + searchName + "'");
+
     string lowerSearch = "";
     for (char c : searchName) lowerSearch += tolower(c);
     
@@ -166,6 +171,6 @@ void teacherSearchStudent(LinkedList& rosterList) {
         }
         cout << "+" << string(10, '-') << "+" << string(30, '-') << "+" << string(35, '-') << "+" << endl;
     } else {
-        cout << "Student not found in your course." << endl;
+        cout << "\033[1;31mStudent not found in your course.\033[0m" << endl;
     }
 }

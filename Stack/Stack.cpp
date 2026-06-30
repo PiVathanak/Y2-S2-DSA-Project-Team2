@@ -4,6 +4,7 @@
 #include <string>
 #include "Stack.h"
 #include "../tools/CSVManager.h"
+#include "../tools/Animation.h"
 
 using namespace std;
 
@@ -52,7 +53,7 @@ void studentEnrollCourse(string userId, LinkedList& courseList, Queue& pendingQu
     delete[] arr;
 
     while (true) {
-        cout << "\nEnter Course ID to enroll (or '0' to back): ";
+        cout << "\nEnter " << Animation::CYAN << "Course ID" << Animation::RESET << " to enroll (or '" << Animation::CYAN << "0" << Animation::RESET << "' to back): ";
         string cid;
         cin >> cid;
         cin.ignore(10000, '\n');
@@ -70,7 +71,7 @@ void studentEnrollCourse(string userId, LinkedList& courseList, Queue& pendingQu
         }
 
         if (!isValidCourse) {
-            cout << "Invalid Course ID! Please try again." << endl;
+            cout << "\033[1;31mInvalid Course ID! Please try again.\033[0m" << endl;
             continue;
         }
 
@@ -95,8 +96,10 @@ void studentEnrollCourse(string userId, LinkedList& courseList, Queue& pendingQu
         }
         
         if (exists) {
-            cout << "You are already enrolled or pending for this course!" << endl;
+            cout << "\033[1;31mYou are already enrolled or pending for this course!\033[0m" << endl;
         } else {
+            Animation::showLoading("Enrolling in course " + cid);
+            
             int nextId = enrollList.count + pendingQueue.size() + 1;
             string eid = "E";
             if (nextId < 10) eid += "00";
@@ -109,7 +112,7 @@ void studentEnrollCourse(string userId, LinkedList& courseList, Queue& pendingQu
             sessionStack.push(pe);
             CSVManager::savePendingEnrollments(pendingQueue);
             
-            cout << "successfully added to list Please wait for admin approval" << endl;
+            cout << Animation::CYAN << "Successfully added to pending list. Please wait for admin approval." << Animation::RESET << endl;
         }
     }
 }

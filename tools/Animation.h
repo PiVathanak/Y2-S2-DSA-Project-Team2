@@ -8,7 +8,35 @@
 #include <sstream>
 #include <algorithm>
 
+#ifdef _WIN32
+#define byte win_byte
+#include <windows.h>
+#undef byte
+#endif
+
 namespace Animation {
+    // ANSI Color Codes
+    inline const std::string BLUE = "\033[1;34m";
+    inline const std::string CYAN = "\033[1;36m";
+    inline const std::string RESET = "\033[0m";
+    inline const std::string WHITE = "\033[1;37m";
+    inline const std::string GRAY = "\033[90m";
+    inline const std::string BOLD = "\033[1m";
+
+    inline void initConsole() {
+#ifdef _WIN32
+        // Enable virtual terminal processing for ANSI color codes on Windows console
+        HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+        if (hOut != INVALID_HANDLE_VALUE) {
+            DWORD dwMode = 0;
+            if (GetConsoleMode(hOut, &dwMode)) {
+                dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+                SetConsoleMode(hOut, dwMode);
+            }
+        }
+#endif
+    }
+
     // High-resolution busy-wait sleep for sub-millisecond precision
     inline void preciseSleepUs(long long microseconds) {
         auto start = std::chrono::high_resolution_clock::now();
@@ -68,6 +96,37 @@ namespace Animation {
         if (postLineDelayMs > 0) {
             std::this_thread::sleep_for(std::chrono::milliseconds(postLineDelayMs));
         }
+    }
+
+    // Beautiful loading animation in blue/cyan that takes exactly 2 seconds
+    inline void showLoading(const std::string& message) {
+        const int total_duration_ms = 2000;
+        const int step_ms = 100;
+        const int steps = total_duration_ms / step_ms;
+        
+        std::cout << std::endl;
+        char spinner[] = {'|', '/', '-', '\\'};
+        for (int i = 0; i <= steps; ++i) {
+            // Carriage return and clear screen command is not strictly needed if we overwrite,
+            // but let's carriage return and write the message.
+            std::cout << "\r" << BLUE << message << " " << CYAN << "[" << spinner[i % 4] << "] [";
+            
+            int barWidth = 20;
+            int pos = (i * barWidth) / steps;
+            for (int j = 0; j < barWidth; ++j) {
+                if (j < pos) std::cout << "=";
+                else if (j == pos) std::cout << ">";
+                else std::cout << " ";
+            }
+            int percent = (i * 100) / steps;
+            std::cout << "] " << percent << "%" << RESET << std::flush;
+            
+            if (i < steps) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(step_ms));
+            }
+        }
+        std::cout << CYAN << " Done!" << RESET << std::endl << std::endl;
+        std::this_thread::sleep_for(std::chrono::milliseconds(150));
     }
 }
 

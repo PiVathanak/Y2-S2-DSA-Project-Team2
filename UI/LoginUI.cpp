@@ -5,6 +5,7 @@
 #include "LoginUI.h"
 #include "../tools/Models.cpp"
 #include "../LinkList/LinkedList.h"
+#include "../tools/Animation.h"
 
 using namespace std;
 
@@ -28,22 +29,24 @@ static string getPassword() {
 }
 
 bool LoginUI::login(LinkedList& adminList, LinkedList& studentList, LinkedList& teacherList, string& outRole, string& outUserId) {
-    cout << "\n=============================" << endl;
-    cout << "     SYSTEM LOGIN PANEL      " << endl;
-    cout << "=============================" << endl;
+    cout << "\n" << Animation::BLUE << "=============================" << Animation::RESET << endl;
+    cout << Animation::BOLD << Animation::BLUE << "     SYSTEM LOGIN PANEL      " << Animation::RESET << endl;
+    cout << Animation::BLUE << "=============================" << Animation::RESET << endl;
     
     string username, password;
-    cout << "Username: ";
+    cout << Animation::CYAN << "Username: " << Animation::RESET;
     cin >> username;
     cin.ignore(10000, '\n');
-    cout << "Password: ";
+    cout << Animation::CYAN << "Password: " << Animation::RESET;
     password = getPassword();
 
+    Animation::showLoading("Authenticating");
+
     if (authenticateUser(adminList, studentList, teacherList, username, password, outRole, outUserId)) {
-        cout << "Login successful as " << outRole << "." << endl;
+        cout << Animation::CYAN << "Login successful as " << outRole << "." << Animation::RESET << endl;
         return true;
     } else {
-        cout << "Invalid username or password!" << endl;
+        cout << "\033[1;31mInvalid username or password!\033[0m" << endl;
         return false;
     }
 }

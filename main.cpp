@@ -56,19 +56,22 @@ void initializeData() {
 }
 
 int main() {
-    cout << "Initializing System Data..." << endl;
+    Animation::initConsole();
+    cout << Animation::BLUE << "Initializing System Data..." << Animation::RESET << endl;
     initializeData();
-    cout << "Data loaded." << endl;
+    cout << Animation::BLUE << "Data loaded." << Animation::RESET << endl;
 
     while(true) {
         std::this_thread::sleep_for(std::chrono::milliseconds(250));
         system("cls");
 
-        cout << "\n== Welcome ==" << endl;
-        cout << "1. Login" << endl;
-        cout << "2. Register (for new student)" << endl;
-        cout << "0. Exit" << endl;
-        cout << "Select: ";
+        cout << "\n" << Animation::BLUE << "==========================" << Animation::RESET << endl;
+        cout << Animation::BOLD << Animation::BLUE << "       WELCOME SYSTEM     " << Animation::RESET << endl;
+        cout << Animation::BLUE << "==========================" << Animation::RESET << endl;
+        cout << Animation::CYAN << "1." << Animation::RESET << " Login" << endl;
+        cout << Animation::CYAN << "2." << Animation::RESET << " Register (for new student)" << endl;
+        cout << Animation::CYAN << "0." << Animation::RESET << " Exit" << endl;
+        cout << Animation::BLUE << "Select: " << Animation::RESET;
         
         int choice;
         if (!(cin >> choice)) {

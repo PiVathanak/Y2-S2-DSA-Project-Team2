@@ -2,8 +2,9 @@
 #include <iostream>
 #include <string>
 #include <conio.h>
+#include "LoginUI.h"
 #include "../tools/Models.cpp"
-#include "../LinkList/LinkedList.cpp"
+#include "../LinkList/LinkedList.h"
 
 using namespace std;
 
@@ -26,59 +27,22 @@ static string getPassword() {
     return password;
 }
 
-class LoginUI {
-public:
-    static bool login(LinkedList& adminList, LinkedList& studentList, LinkedList& teacherList, string& outRole, string& outUserId) {
-        cout << "\n=============================" << endl;
-        cout << "     SYSTEM LOGIN PANEL      " << endl;
-        cout << "=============================" << endl;
-        
-        string username, password;
-        cout << "Username: ";
-        cin >> username;
-        cout << "Password: ";
-        password = getPassword();
+bool LoginUI::login(LinkedList& adminList, LinkedList& studentList, LinkedList& teacherList, string& outRole, string& outUserId) {
+    cout << "\n=============================" << endl;
+    cout << "     SYSTEM LOGIN PANEL      " << endl;
+    cout << "=============================" << endl;
+    
+    string username, password;
+    cout << "Username: ";
+    cin >> username;
+    cout << "Password: ";
+    password = getPassword();
 
-        // Check Admins
-        ListNode* curr = adminList.head;
-        while (curr) {
-            Admin* a = (Admin*)curr->data;
-            if (a->username == username && a->password == password) {
-                outRole = "Admin";
-                outUserId = a->admin_id;
-                cout << "Login successful as Admin." << endl;
-                return true;
-            }
-            curr = curr->next;
-        }
-
-        // Check Teachers
-        curr = teacherList.head;
-        while (curr) {
-            Teacher* t = (Teacher*)curr->data;
-            if (t->username == username && t->password == password) {
-                outRole = "Teacher";
-                outUserId = t->teacher_id;
-                cout << "Login successful as Teacher." << endl;
-                return true;
-            }
-            curr = curr->next;
-        }
-
-        // Check Students
-        curr = studentList.head;
-        while (curr) {
-            Student* s = (Student*)curr->data;
-            if (s->username == username && s->password == password) {
-                outRole = "Student";
-                outUserId = s->student_id;
-                cout << "Login successful as Student." << endl;
-                return true;
-            }
-            curr = curr->next;
-        }
-
-        cout << "Invalid credentials." << endl;
+    if (authenticateUser(adminList, studentList, teacherList, username, password, outRole, outUserId)) {
+        cout << "Login successful as " << outRole << "." << endl;
+        return true;
+    } else {
+        cout << "Invalid username or password!" << endl;
         return false;
     }
-};
+}

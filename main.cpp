@@ -2,7 +2,22 @@
 #include <string>
 
 // Include everything in dependency order
+// Headers
 #include "tools/Models.cpp"
+#include "LinkList/LinkedList.h"
+#include "Queue/Queue.h"
+#include "Stack/Stack.h"
+#include "Tree/BST.h"
+#include "HashTable/HashTable.h"
+#include "Sorting/Sorting.h"
+#include "tools/CSVManager.h"
+#include "UI/AdminDashboard.h"
+#include "UI/TeacherDashboard.h"
+#include "UI/StudentDashboard.h"
+#include "UI/LoginUI.h"
+#include "UI/RegisterUI.h"
+
+// Implementations
 #include "LinkList/LinkedList.cpp"
 #include "Queue/Queue.cpp"
 #include "Stack/Stack.cpp"
@@ -10,8 +25,6 @@
 #include "HashTable/HashTable.cpp"
 #include "Sorting/Sorting.cpp"
 #include "tools/CSVManager.cpp"
-
-// UI components
 #include "UI/LoginUI.cpp"
 #include "UI/RegisterUI.cpp"
 #include "UI/AdminDashboard.cpp"
@@ -63,7 +76,7 @@ int main() {
             string role, userId;
             if (LoginUI::login(adminList, studentList, teacherList, role, userId)) { // check all 3 role csv
                 if (role == "Admin") {
-                    AdminDashboard::render(studentList, pendingQueue, enrollList, courseList);
+                    AdminDashboard::render(studentList, pendingQueue, enrollList, courseList, teacherList);
                 } else if (role == "Teacher") {
                     TeacherDashboard::render(userId, teacherList, enrollList, studentList);
                 } else if (role == "Student") {
